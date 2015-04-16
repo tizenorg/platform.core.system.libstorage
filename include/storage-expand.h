@@ -33,7 +33,7 @@ extern "C" {
 
 /**
  * @brief Enumeration of error codes for Storage.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum
 {
@@ -47,7 +47,7 @@ typedef enum
 
 /**
  * @brief Enumeration of the storage types.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum
 {
@@ -58,7 +58,7 @@ typedef enum
 
 /**
  * @brief Enumeration of the state of storage devices.
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum
 {
@@ -71,7 +71,7 @@ typedef enum
 /**
  * @brief Called to get information once for each supported storage.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The unique storage ID
  * @param[in] type The type of the storage
@@ -93,7 +93,7 @@ typedef bool (*storage_device_supported_cb)(int storage_id, storage_type_e type,
  * @details This function invokes the callback function once for each storage in a device. \n
  *          If storage_device_supported_cb() returns @c false, then the iteration will be finished.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] callback The iteration callback function
  * @param[in] user_data The user data to be passed to the callback function
@@ -114,7 +114,7 @@ int storage_foreach_device_supported(storage_device_supported_cb callback, void 
  * @details Files saved on the internal/external storage are readable or writeable by all applications.
  *          When an application is uninstalled, the files written by that application are not removed from the internal/external storage.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @remarks If you want to access files or directories in internal storage, you must declare http://tizen.org/privilege/mediastorage.\n
  * If you want to access files or directories in external storage, you must declare http://tizen.org/privilege/externalstorage.\n
@@ -137,7 +137,7 @@ int storage_get_root_directory(int storage_id, char **path);
 
 /**
  * @brief Enumeration of the storage directory types
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum
 {
@@ -158,7 +158,7 @@ typedef enum
  * @details Files saved on the internal/external storage are readable or writeable by all applications.
  *          When an application is uninstalled, the files written by that application are not removed from the internal/external storage.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @remarks The directory path may not exist, so you must make sure that it exists before using it.\n
  * If you want to access files or directories in internal storage except #STORAGE_DIRECTORY_SYSTEM_RINGTONES, you must declare http://tizen.org/privilege/mediastorage.\n
@@ -185,7 +185,7 @@ int storage_get_directory(int storage_id, storage_directory_e type, char **path)
 /**
  * @brief Gets the type of the given storage.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The storage device
  * @param[out] type The type of the storage
@@ -202,7 +202,7 @@ int storage_get_type(int storage_id, storage_type_e *type);
 /**
  * @brief Gets the current state of the given storage.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The storage device
  * @param[out] state The current state of the storage
@@ -223,7 +223,7 @@ int storage_get_state(int storage_id, storage_state_e *state);
 /**
  * @brief Called when the state of storage changes
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The unique storage ID
  * @param[in] state The current state of the storage
@@ -238,7 +238,7 @@ typedef void (*storage_state_changed_cb)(int storage_id, storage_state_e state, 
 /**
  * @brief Registers a callback function to be invoked when the state of the storage changes.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The storage device
  * @param[in] callback The callback function to register
@@ -261,7 +261,7 @@ int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb callba
 /**
  * @brief Unregisters the callback function.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The storage device to monitor
  * @param[in] callback The callback function to register
@@ -282,7 +282,7 @@ int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb call
 /**
  * @brief Gets the total space of the given storage in bytes.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The storage device
  * @param[out] bytes The total space size of the storage (bytes)
@@ -303,7 +303,7 @@ int storage_get_total_space(int storage_id, unsigned long long *bytes);
 /**
  * @brief Gets the available space size of the given storage in bytes.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[in] storage_id The storage device
  * @param[out] bytes The available space size of the storage (bytes)

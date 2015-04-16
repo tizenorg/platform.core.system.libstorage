@@ -44,7 +44,7 @@ extern "C" {
  * @fn int storage_get_internal_memory_size(struct statvfs *buf)
  * @brief This generic API is used to get the internal memory size.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[out] buf A pointer to a statvfs structure
  * @return @c 0 on success,
@@ -76,7 +76,7 @@ extern int storage_get_internal_memory_size64(struct statvfs *buf);
  * @fn int storage_get_external_memory_size(struct statvfs *buf)
  * @brief This generic API is used to get the external memory size.
  *
- * @since_tizen 2.3
+ * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  *
  * @param[out] buf A pointer to a statvfs structure
  * @return @c 0 on success,
