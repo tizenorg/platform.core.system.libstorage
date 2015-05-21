@@ -250,7 +250,7 @@ API int storage_get_internal_memory_size(struct statvfs *buf)
 	}
 
 	ret = get_memory_size(MEMORY_STATUS_USR_PATH, &temp);
-	if (ret) {
+	if (ret || temp.f_bsize == 0) {
 		_E("fail to get memory size");
 		return -errno;
 	}
