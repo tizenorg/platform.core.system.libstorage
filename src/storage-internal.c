@@ -21,11 +21,11 @@
 #include <errno.h>
 #include <limits.h>
 #include <sys/statvfs.h>
+#include <tzplatform_config.h>
 
 #include "common.h"
 #include "log.h"
 
-#define INTERNAL_MEMORY_PATH	"/opt/usr/media"
 
 #ifndef __USE_FILE_OFFSET64
 int __WEAK__ storage_get_internal_memory_size(struct statvfs *buf);
@@ -60,7 +60,7 @@ static int internal_get_space(unsigned long long *total, unsigned long long *ava
 
 static const char *internal_get_root(void)
 {
-	return INTERNAL_MEMORY_PATH;
+	return tzplatform_getenv(TZ_USER_CONTENT);
 }
 
 const struct storage_ops internal = {
