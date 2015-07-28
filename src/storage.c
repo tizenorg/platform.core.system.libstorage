@@ -88,7 +88,7 @@ API int storage_get_root_directory(int storage_id, char **path)
 
 	*path = strdup(st->root());
 	if (!*path) {
-		_E("Failed to copy the root string : %s", strerror(errno));
+		_E("Failed to copy the root string : %d", errno);
 		return STORAGE_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -131,7 +131,7 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 
 	*path = strdup(temp);
 	if (!*path) {
-		_E("Failed to copy the directory(%d) string : %s", type, strerror(errno));
+		_E("Failed to copy the directory(%d) string : %d", type, errno);
 		return STORAGE_ERROR_OUT_OF_MEMORY;
 	}
 

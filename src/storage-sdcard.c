@@ -93,7 +93,7 @@ static const char *sdcard_get_root(void)
 	return SDCARD_PATH;
 }
 
-static void sdcard_state_cb(keynode_t* key, void* data)
+static void sdcard_state_cb(keynode_t *key, void *data)
 {
 	struct storage_cb_info *cb_info;
 	dd_list *elem;

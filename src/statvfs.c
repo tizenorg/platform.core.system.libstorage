@@ -192,7 +192,7 @@ static int load_config(struct parse_result *result, void *user_data)
 	value = result->value;
 
 	if (info->check_size > 0 && check_size < 0)
-		check_size = (storage_info.total_size < info->check_size)? 1 : 0;
+		check_size = (storage_info.total_size < info->check_size) ? 1 : 0;
 	if (MATCH(name, "CHECK_SIZE"))
 		info->check_size = atoi(value);
 	else if (check_size == 0 && MATCH(name, "RESERVE"))
@@ -222,6 +222,8 @@ static int get_memory_size(const char *path, struct statvfs_32 *buf)
 	ret = statvfs(path, &s);
 	if (ret)
 		return -errno;
+
+	memset(buf, 0, sizeof(struct statvfs_32));
 
 	buf->f_bsize  = s.f_bsize;
 	buf->f_frsize = s.f_frsize;
@@ -303,17 +305,17 @@ API int storage_get_internal_memory_size64(struct statvfs *buf)
 	return 0;
 }
 
-static int mount_check(const char* path)
+static int mount_check(const char *path)
 {
 	int ret = false;
-	struct mntent* mnt;
-	const char* table = "/etc/mtab";
-	FILE* fp;
+	struct mntent *mnt;
+	const char *table = "/etc/mtab";
+	FILE *fp;
 
 	fp = setmntent(table, "r");
 	if (!fp)
 		return ret;
-	while ((mnt=getmntent(fp))) {
+	while ((mnt = getmntent(fp))) {
 		if (!strcmp(mnt->mnt_dir, path)) {
 			ret = true;
 			break;
