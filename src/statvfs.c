@@ -223,6 +223,8 @@ static int get_memory_size(const char *path, struct statvfs_32 *buf)
 	if (ret)
 		return -errno;
 
+	memset(buf, 0, sizeof(struct statvfs_32));
+
 	buf->f_bsize  = s.f_bsize;
 	buf->f_frsize = s.f_frsize;
 	buf->f_blocks = (unsigned long)s.f_blocks;
