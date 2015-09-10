@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <mntent.h>
+#include <tzplatform_config.h>
 
 #include "log.h"
 #include "common.h"
@@ -33,7 +34,7 @@
 #define MEMORY_MEGABYTE_VALUE  1048576
 
 #define MEMORY_STATUS_USR_PATH "/opt/usr"
-#define EXTERNAL_MEMORY_PATH   "/opt/storage/sdcard"
+#define EXTERNAL_MEMORY_NODE   "sdcard"
 #define STORAGE_CONF_FILE      "/etc/storage/libstorage.conf"
 
 /* it's for 32bit file offset */
@@ -325,6 +326,12 @@ static int mount_check(const char *path)
 	return ret;
 }
 
+static const char *get_external_path(void)
+{
+	return tzplatform_mkpath(TZ_SYS_STORAGE,
+			EXTERNAL_MEMORY_NODE);
+}
+
 API int storage_get_external_memory_size(struct statvfs *buf)
 {
 	struct statvfs_32 temp;
@@ -336,12 +343,12 @@ API int storage_get_external_memory_size(struct statvfs *buf)
 		return -EINVAL;
 	}
 
-	if (!mount_check(EXTERNAL_MEMORY_PATH)) {
+	if (!mount_check(get_external_path())) {
 		memset(buf, 0, sizeof(struct statvfs_32));
 		return 0;
 	}
 
-	ret = get_memory_size(EXTERNAL_MEMORY_PATH, &temp);
+	ret = get_memory_size(get_external_path(), &temp);
 	if (ret) {
 		_E("fail to get memory size");
 		return -errno;
@@ -361,12 +368,12 @@ API int storage_get_external_memory_size64(struct statvfs *buf)
 		return -EINVAL;
 	}
 
-	if (!mount_check(EXTERNAL_MEMORY_PATH)) {
+	if (!mount_check(get_external_path())) {
 		memset(buf, 0, sizeof(struct statvfs));
 		return 0;
 	}
 
-	ret = statvfs(EXTERNAL_MEMORY_PATH, buf);
+	ret = statvfs(get_external_path(), buf);
 	if (ret) {
 		_E("fail to get memory size");
 		return -errno;

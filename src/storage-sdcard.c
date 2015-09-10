@@ -21,12 +21,13 @@
 #include <errno.h>
 #include <sys/statvfs.h>
 #include <vconf.h>
+#include <tzplatform_config.h>
 
 #include "common.h"
 #include "list.h"
 #include "log.h"
 
-#define SDCARD_PATH "/opt/storage/sdcard"
+#define SDCARD_NODE "sdcard"
 
 #ifndef __USE_FILE_OFFSET64
 int __WEAK__ storage_get_external_memory_size(struct statvfs *buf);
@@ -88,7 +89,7 @@ static int sdcard_get_space(unsigned long long *total, unsigned long long *avail
 
 static const char *sdcard_get_root(void)
 {
-	return SDCARD_PATH;
+	return tzplatform_mkpath(TZ_SYS_STORAGE, SDCARD_NODE);
 }
 
 static void sdcard_state_cb(keynode_t *key, void *data)
