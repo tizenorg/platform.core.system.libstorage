@@ -328,7 +328,7 @@ static int mount_check(const char *path)
 
 static const char *get_external_path(void)
 {
-	return tzplatform_mkpath(TZ_SYS_STORAGE,
+	return tzplatform_mkpath(TZ_SYS_MEDIA,
 			EXTERNAL_MEMORY_NODE);
 }
 

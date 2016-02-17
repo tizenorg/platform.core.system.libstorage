@@ -89,7 +89,7 @@ static int sdcard_get_space(unsigned long long *total, unsigned long long *avail
 
 static const char *sdcard_get_root(void)
 {
-	return tzplatform_mkpath(TZ_SYS_STORAGE, SDCARD_NODE);
+	return tzplatform_mkpath(TZ_SYS_MEDIA, SDCARD_NODE);
 }
 
 static void sdcard_state_cb(keynode_t *key, void *data)
