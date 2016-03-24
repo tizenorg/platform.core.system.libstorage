@@ -33,7 +33,6 @@
 #define MEMORY_GIGABYTE_VALUE  1073741824
 #define MEMORY_MEGABYTE_VALUE  1048576
 
-#define MEMORY_STATUS_USR_PATH "/opt/usr"
 #define EXTERNAL_MEMORY_NODE   "sdcard"
 #define STORAGE_CONF_FILE      "/etc/storage/libstorage.conf"
 
@@ -252,7 +251,7 @@ API int storage_get_internal_memory_size(struct statvfs *buf)
 		return -EINVAL;
 	}
 
-	ret = get_memory_size(MEMORY_STATUS_USR_PATH, &temp);
+	ret = get_memory_size(tzplatform_getenv(TZ_USER_CONTENT), &temp);
 	if (ret || temp.f_bsize == 0) {
 		_E("fail to get memory size");
 		return -errno;
@@ -285,7 +284,7 @@ API int storage_get_internal_memory_size64(struct statvfs *buf)
 		return -EINVAL;
 	}
 
-	ret = statvfs(MEMORY_STATUS_USR_PATH, buf);
+	ret = statvfs(tzplatform_getenv(TZ_USER_CONTENT), buf);
 	if (ret) {
 		_E("fail to get memory size");
 		return -errno;
