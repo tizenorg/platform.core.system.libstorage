@@ -30,7 +30,8 @@ Library to get storage information (devel)
 cp %{SOURCE1} .
 
 %build
-%cmake .
+%cmake . -DTZ_SYS_RO_APP=%{TZ_SYS_RO_APP}
+
 make %{?jobs:-j%jobs}
 
 %install
