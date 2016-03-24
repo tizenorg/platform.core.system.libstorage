@@ -33,7 +33,8 @@ const char *dir_path[STORAGE_DIRECTORY_MAX] = {
 	[STORAGE_DIRECTORY_MUSIC] = "Music",
 	[STORAGE_DIRECTORY_DOCUMENTS] = "Documents",
 	[STORAGE_DIRECTORY_OTHERS] = "Others",
-	[STORAGE_DIRECTORY_SYSTEM_RINGTONES] = "/usr/apps/org.tizen.setting/shared/res/settings/Ringtones",
+	[STORAGE_DIRECTORY_SYSTEM_RINGTONES]
+		= STORAGE_SYS_RO_APP"/org.tizen.setting/shared/res/settings/Ringtones",
 };
 
 static dd_list *st_head;

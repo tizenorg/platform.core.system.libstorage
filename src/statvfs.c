@@ -33,9 +33,9 @@
 #define MEMORY_GIGABYTE_VALUE  1073741824
 #define MEMORY_MEGABYTE_VALUE  1048576
 
-#define MEMORY_STATUS_USR_PATH "/opt/usr"
+#define MEMORY_STATUS_USR_PATH STORAGE_SYS_MEDIA
 #define EXTERNAL_MEMORY_NODE   "sdcard"
-#define STORAGE_CONF_FILE      "/etc/storage/libstorage.conf"
+#define STORAGE_CONF_FILE      STORAGE_SYS_RO_ETC"/storage/libstorage.conf"
 
 /* it's for 32bit file offset */
 struct statvfs_32 {
