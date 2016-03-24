@@ -31,6 +31,7 @@ cp %{SOURCE1} .
 
 %build
 %cmake .
+
 make %{?jobs:-j%jobs}
 
 %install
