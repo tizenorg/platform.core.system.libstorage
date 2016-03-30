@@ -10,7 +10,7 @@ SET(VERSION 0.1)
 SET(INC_DIR include)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/${INC_DIR})
 
-SET(dependents "dlog capi-base-common vconf glib-2.0 libtzplatform-config")
+SET(dependents "dlog capi-base-common vconf glib-2.0 libtzplatform-config capi-system-system-settings")
 SET(pc_dependents "capi-base-common")
 
 INCLUDE(FindPkgConfig)
