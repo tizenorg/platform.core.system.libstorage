@@ -12,6 +12,7 @@ BuildRequires:  pkgconfig(capi-base-common)
 BuildRequires:  pkgconfig(vconf)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(libtzplatform-config)
+BuildRequires:  pkgconfig(capi-system-system-settings)
 
 %description
 development package of library to get storage
