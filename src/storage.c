@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <system_settings.h>
 
 #include "common.h"
 #include "list.h"
@@ -100,6 +101,8 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 	const struct storage_ops *st;
 	const char *root;
 	char temp[PATH_MAX];
+	char *temp2, *end;
+	int ret;
 
 	if (!path) {
 		_E("Invalid parameger");
@@ -124,10 +127,18 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 	}
 
 	root = st->root();
-	if (type == STORAGE_DIRECTORY_SYSTEM_RINGTONES)
-		snprintf(temp, PATH_MAX, "%s", dir_path[type]);
-	else
+	if (type == STORAGE_DIRECTORY_SYSTEM_RINGTONES) {
+		ret = system_settings_get_value_string(SYSTEM_SETTINGS_KEY_INCOMING_CALL_RINGTONE, &temp2);
+		if (ret < 0) {
+			_E("Failed to get ringtone path");
+			return STORAGE_ERROR_OPERATION_FAILED;
+		}
+		end = strrchr(temp2, '/');
+		*end = '\0';
+		snprintf(temp, PATH_MAX, "%s", temp2);
+	} else {
 		snprintf(temp, PATH_MAX, "%s/%s", root, dir_path[type]);
+	}
 
 	*path = strdup(temp);
 	if (!*path) {
