@@ -28,21 +28,21 @@
 #ifdef ENABLE_DLOG
 #include <dlog.h>
 #define _D(fmt, arg...) \
-	do { SLOGD(fmt, ##arg); } while(0)
+	do { SLOGD(fmt, ##arg); } while (0)
 #define _I(fmt, arg...) \
-	do { SLOGI(fmt, ##arg); } while(0)
+	do { SLOGI(fmt, ##arg); } while (0)
 #define _W(fmt, arg...) \
-	do { SLOGW(fmt, ##arg); } while(0)
+	do { SLOGW(fmt, ##arg); } while (0)
 #define _E(fmt, arg...) \
-	do { SLOGE(fmt, ##arg); } while(0)
+	do { SLOGE(fmt, ##arg); } while (0)
 #define _SD(fmt, arg...) \
-	do { SECURE_SLOGD(fmt, ##arg); } while(0)
+	do { SECURE_SLOGD(fmt, ##arg); } while (0)
 #define _SI(fmt, arg...) \
-	do { SECURE_SLOGI(fmt, ##arg); } while(0)
+	do { SECURE_SLOGI(fmt, ##arg); } while (0)
 #define _SW(fmt, arg...) \
-	do { SECURE_SLOGW(fmt, ##arg); } while(0)
+	do { SECURE_SLOGW(fmt, ##arg); } while (0)
 #define _SE(fmt, arg...) \
-	do { SECURE_SLOGE(fmt, ##arg); } while(0)
+	do { SECURE_SLOGE(fmt, ##arg); } while (0)
 #else
 #define _D(...)  do { } while (0)
 #define _I(...)  do { } while (0)
