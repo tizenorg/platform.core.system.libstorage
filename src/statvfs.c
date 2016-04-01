@@ -93,7 +93,7 @@ static inline char *trim_str(char *s)
 }
 
 static int config_parse(const char *file_name, int cb(struct parse_result *result,
-    void *user_data), void *user_data)
+			void *user_data), void *user_data)
 {
 	FILE *f = NULL;
 	struct parse_result result;

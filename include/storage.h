@@ -98,9 +98,9 @@ extern int storage_get_internal_memory_size64(struct statvfs *buf);
 extern int storage_get_external_memory_size(struct statvfs *buf);
 #else
 # ifdef __REDIRECT_NTH
-extern int __REDIRECT_NTH (storage_get_external_memory_size,
+extern int __REDIRECT_NTH(storage_get_external_memory_size,
 				(struct statvfs *buf), storage_get_external_memory_size64)
-	__nonnull ((1));
+	__nonnull((1));
 # else
 #  define storage_get_external_memory_size storage_get_external_memory_size64
 # endif

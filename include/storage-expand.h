@@ -35,8 +35,7 @@ extern "C" {
  * @brief Enumeration of error codes for Storage.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
-typedef enum
-{
+typedef enum {
     STORAGE_ERROR_NONE              = TIZEN_ERROR_NONE,                /**< Successful */
     STORAGE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,   /**< Invalid parameter */
     STORAGE_ERROR_OUT_OF_MEMORY     = TIZEN_ERROR_OUT_OF_MEMORY,       /**< Out of memory */
@@ -49,8 +48,7 @@ typedef enum
  * @brief Enumeration of the storage types.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
-typedef enum
-{
+typedef enum {
     STORAGE_TYPE_INTERNAL, /**< Internal device storage (built-in storage in a device, non-removable) */
     STORAGE_TYPE_EXTERNAL, /**< External storage */
 } storage_type_e;
@@ -60,8 +58,7 @@ typedef enum
  * @brief Enumeration of the state of storage devices.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
-typedef enum
-{
+typedef enum {
     STORAGE_STATE_UNMOUNTABLE = -2, /**< Storage is present but cannot be mounted. Typically it happens if the file system of the storage is corrupted */
     STORAGE_STATE_REMOVED = -1, /**< Storage is not present */
     STORAGE_STATE_MOUNTED = 0, /**< Storage is present and mounted with read/write access */
@@ -139,8 +136,7 @@ int storage_get_root_directory(int storage_id, char **path);
  * @brief Enumeration of the storage directory types
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
-typedef enum
-{
+typedef enum {
 	STORAGE_DIRECTORY_IMAGES,           /**< Image directory */
 	STORAGE_DIRECTORY_SOUNDS,           /**< Sounds directory */
 	STORAGE_DIRECTORY_VIDEOS,           /**< Videos directory */
