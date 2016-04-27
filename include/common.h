@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include "storage-expand.h"
+#include <sys/statvfs.h>
 
 #ifndef API
 #define API __attribute__ ((visibility("default")))
@@ -59,6 +60,7 @@ struct storage_ops {
 	int (*get_space) (unsigned long long *total, unsigned long long *available);
 	int (*register_cb) (enum storage_cb_type type, struct storage_cb_info *info);
 	int (*unregister_cb) (enum storage_cb_type type, struct storage_cb_info *info);
+	int storage_id;
 };
 
 #define STORAGE_OPS_REGISTER(st)	\
@@ -73,6 +75,9 @@ static void __DESTRUCTOR__ module_exit(void)	\
 
 void add_device(const struct storage_ops *st);
 void remove_device(const struct storage_ops *st);
+
+int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf);
+int storage_get_external_memory_size64_with_path(char *path, struct statvfs *buf);
 
 #ifdef __cplusplus
 }
