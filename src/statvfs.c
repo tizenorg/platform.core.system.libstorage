@@ -29,6 +29,7 @@
 
 #include "log.h"
 #include "common.h"
+#include "storage-external.h"
 
 #define MEMORY_GIGABYTE_VALUE  1073741824
 #define MEMORY_MEGABYTE_VALUE  1048576
@@ -305,7 +306,7 @@ API int storage_get_internal_memory_size64(struct statvfs *buf)
 	return 0;
 }
 
-static int mount_check(const char *path)
+static int mount_check(char *path)
 {
 	int ret = false;
 	struct mntent *mnt;
@@ -325,16 +326,16 @@ static int mount_check(const char *path)
 	return ret;
 }
 
-static const char *get_external_path(void)
+static int get_external_path(char *path, size_t len)
 {
-	return tzplatform_mkpath(TZ_SYS_MEDIA,
-			EXTERNAL_MEMORY_NODE);
+	return storage_ext_get_primary_mmc_path(path, len);
 }
 
-API int storage_get_external_memory_size(struct statvfs *buf)
+int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf)
 {
 	struct statvfs_32 temp;
 	int ret;
+	char ext_path[32];
 
 	_D("storage_get_external_memory_size");
 	if (!buf) {
@@ -342,12 +343,22 @@ API int storage_get_external_memory_size(struct statvfs *buf)
 		return -EINVAL;
 	}
 
-	if (!mount_check(get_external_path())) {
+	if (path)
+		snprintf(ext_path, sizeof(ext_path), "%s", path);
+	else {
+		ret = get_external_path(ext_path, sizeof(ext_path));
+		if (ret < 0) {
+			_E("Failed to get external path(%d)", ret);
+			return ret;
+		}
+	}
+
+	if (!mount_check(ext_path)) {
 		memset(buf, 0, sizeof(struct statvfs_32));
 		return 0;
 	}
 
-	ret = get_memory_size(get_external_path(), &temp);
+	ret = get_memory_size(ext_path, &temp);
 	if (ret) {
 		_E("fail to get memory size");
 		return -errno;
@@ -357,9 +368,10 @@ API int storage_get_external_memory_size(struct statvfs *buf)
 	return 0;
 }
 
-API int storage_get_external_memory_size64(struct statvfs *buf)
+int storage_get_external_memory_size64_with_path(char *path, struct statvfs *buf)
 {
 	int ret;
+	char ext_path[32];
 
 	_D("storage_get_external_memory_size64");
 	if (!buf) {
@@ -367,16 +379,36 @@ API int storage_get_external_memory_size64(struct statvfs *buf)
 		return -EINVAL;
 	}
 
-	if (!mount_check(get_external_path())) {
+	if (path)
+		snprintf(ext_path, sizeof(ext_path), "%s", path);
+	else {
+		ret = get_external_path(ext_path, sizeof(ext_path));
+		if (ret < 0) {
+			_E("Failed to get external path(%d)", ret);
+			return ret;
+		}
+	}
+
+	if (!mount_check(ext_path)) {
 		memset(buf, 0, sizeof(struct statvfs));
 		return 0;
 	}
 
-	ret = statvfs(get_external_path(), buf);
+	ret = statvfs(ext_path, buf);
 	if (ret) {
 		_E("fail to get memory size");
 		return -errno;
 	}
 
 	return 0;
+}
+
+API int storage_get_external_memory_size(struct statvfs *buf)
+{
+	return storage_get_external_memory_size_with_path(NULL, buf);
+}
+
+API int storage_get_external_memory_size64(struct statvfs *buf)
+{
+	return storage_get_external_memory_size64_with_path(NULL, buf);
 }

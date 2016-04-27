@@ -68,6 +68,7 @@ const struct storage_ops internal = {
 	.root = internal_get_root,
 	.get_state = internal_get_state,
 	.get_space = internal_get_space,
+	.storage_id = 0,
 };
 
 STORAGE_OPS_REGISTER(&internal)
