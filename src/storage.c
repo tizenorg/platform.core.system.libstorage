@@ -198,6 +198,7 @@ API int storage_get_type(int storage_id, storage_type_e *type)
 	}
 
 	/* external storage */
+	*type = STORAGE_TYPE_EXTERNAL;
 
 	return STORAGE_ERROR_NONE;
 }
