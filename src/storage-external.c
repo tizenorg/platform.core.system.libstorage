@@ -28,6 +28,8 @@
 #include "log.h"
 #include "storage-external-dbus.h"
 
+static dd_list *cb_list[STORAGE_CALLBACK_MAX];
+
 static int storage_ext_get_dev_state(storage_ext_device *dev,
 		enum storage_ext_state blk_state,
 		storage_state_e *state)
@@ -90,5 +92,103 @@ int storage_ext_foreach_device_list(storage_device_supported_cb callback, void *
 
 	if (list)
 		storage_ext_release_list(&list);
+	return 0;
+}
+
+static int storage_ext_state_changed(storage_ext_device *dev, enum storage_ext_state blk_state, void *data)
+{
+	enum storage_cb_type type = (enum storage_cb_type)data;
+	struct storage_cb_info *cb_info;
+	dd_list *elem;
+	storage_state_e state;
+	int ret;
+
+	if (!dev)
+		return -EINVAL;
+
+	if (type != STORAGE_CALLBACK_STATE)
+		return 0;
+
+	ret = storage_ext_get_dev_state(dev, blk_state, &state);
+	if (ret < 0) {
+		_E("Failed to get storage state (devnode:%s, ret:%d)", dev->devnode, ret);
+		return ret;
+	}
+
+	DD_LIST_FOREACH(cb_list[STORAGE_CALLBACK_STATE], elem, cb_info)
+		cb_info->state_cb(cb_info->id, state, cb_info->user_data);
+
+	return 0;
+}
+
+int storage_ext_register_cb(enum storage_cb_type type, struct storage_cb_info *info)
+{
+	struct storage_cb_info *cb_info;
+	dd_list *elem;
+	int ret, n;
+
+	if (type < 0 || type >= STORAGE_CALLBACK_MAX)
+		return -EINVAL;
+
+	if (!info)
+		return -EINVAL;
+
+	/* check if it is the first request */
+	n = DD_LIST_LENGTH(cb_list[type]);
+	if (n == 0) {
+		ret = storage_ext_register_device_change(storage_ext_state_changed, (void *)type);
+		if (ret < 0)
+			return -EPERM;
+	}
+
+	/* check for the same request */
+	DD_LIST_FOREACH(cb_list[type], elem, cb_info) {
+		if (cb_info->id == info->id &&
+		    cb_info->state_cb == info->state_cb)
+			return -EEXIST;
+	}
+
+	/* add device changed callback to list (local) */
+	cb_info = malloc(sizeof(struct storage_cb_info));
+	if (!cb_info)
+		return -errno;
+
+	memcpy(cb_info, info, sizeof(struct storage_cb_info));
+	DD_LIST_APPEND(cb_list[type], cb_info);
+
+	return 0;
+}
+
+int storage_ext_unregister_cb(enum storage_cb_type type, struct storage_cb_info *info)
+{
+	struct storage_cb_info *cb_info;
+	dd_list *elem;
+	int n;
+
+	if (type < 0 || type >= STORAGE_CALLBACK_MAX)
+		return -EINVAL;
+
+	if (!info)
+		return -EINVAL;
+
+	/* search for the same element with callback */
+	DD_LIST_FOREACH(cb_list[type], elem, cb_info) {
+		if (cb_info->id == info->id &&
+		    cb_info->state_cb == info->state_cb)
+			break;
+	}
+
+	if (!cb_info)
+		return -EINVAL;
+
+	/* remove device callback from list (local) */
+	DD_LIST_REMOVE(cb_list[type], cb_info);
+	free(cb_info);
+
+	/* check if this callback is last element */
+	n = DD_LIST_LENGTH(cb_list[type]);
+	if (n == 0)
+		storage_ext_unregister_device_change(storage_ext_state_changed);
+
 	return 0;
 }

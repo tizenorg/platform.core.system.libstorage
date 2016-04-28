@@ -73,8 +73,13 @@ typedef struct _storage_ext_device {
 	int storage_id;
 } storage_ext_device;
 
+typedef int (*storage_ext_changed_cb)(storage_ext_device *dev, enum storage_ext_state state, void *data);
+
 void storage_ext_release_device(storage_ext_device **dev);
 void storage_ext_release_list(dd_list **list);
 int storage_ext_get_list(dd_list **list);
+
+int storage_ext_register_device_change(storage_ext_changed_cb func, void *data);
+void storage_ext_unregister_device_change(storage_ext_changed_cb func);
 
 #endif /* __STORAGE_EXTERNAL_DBUS_H__ */
