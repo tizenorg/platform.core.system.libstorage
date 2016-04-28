@@ -192,3 +192,21 @@ int storage_ext_unregister_cb(enum storage_cb_type type, struct storage_cb_info 
 
 	return 0;
 }
+
+int storage_ext_get_root(int storage_id, char *path, size_t len)
+{
+	storage_ext_device dev;
+	int ret;
+
+	if (storage_id < 0 || !path)
+		return -EINVAL;
+
+	ret = storage_ext_get_device_info(storage_id, &dev);
+	if (ret < 0) {
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		return ret;
+	}
+
+	snprintf(path, len, "%s", dev.mount_point);
+	return 0;
+}

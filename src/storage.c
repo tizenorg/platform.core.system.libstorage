@@ -82,6 +82,8 @@ API int storage_get_root_directory(int storage_id, char **path)
 {
 	const struct storage_ops *st;
 	dd_list *elem;
+	char root[PATH_MAX];
+	int ret;
 
 	if (!path || storage_id < 0) {
 		_E("Invalid parameger");
@@ -100,7 +102,18 @@ API int storage_get_root_directory(int storage_id, char **path)
 		return STORAGE_ERROR_NONE;
 	}
 
-	/* TODO external storage */
+	/* external storage */
+	ret = storage_ext_get_root(storage_id, root, sizeof(root));
+	if (ret < 0) {
+		_E("Failed to get root path of external storage(%d, %d", storage_id, ret);
+		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	*path = strdup(root);
+	if (!*path) {
+		_E("Failed to copy the root string : %d", errno);
+		return STORAGE_ERROR_OUT_OF_MEMORY;
+	}
 
 	return STORAGE_ERROR_NONE;
 }
