@@ -167,7 +167,18 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 	}
 
 	/* external storage */
-	return STORAGE_ERROR_NONE;
+	if (type == STORAGE_DIRECTORY_SYSTEM_RINGTONES) {
+		_E("Not support directory : id(%d) type(%d)", storage_id, type);
+		return STORAGE_ERROR_NOT_SUPPORTED;
+	}
+
+	ret = storage_ext_get_root(storage_id, root, sizeof(root));
+	if (ret < 0) {
+		_E("Failed to get root dir for external storage(id:%d, ret:%d)", storage_id, ret);
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
+
+	snprintf(temp, sizeof(temp), "%s/%s", root, dir_path[type]);
 
 out:
 	*path = strdup(temp);
