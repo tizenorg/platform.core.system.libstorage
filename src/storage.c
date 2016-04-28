@@ -327,7 +327,7 @@ API int storage_get_total_space(int storage_id, unsigned long long *bytes)
 	}
 
 	/* external storage */
-	ret = 0;
+	ret = storage_ext_get_space(storage_id, &total, NULL);
 
 out:
 	if (ret < 0) {
@@ -360,7 +360,7 @@ API int storage_get_available_space(int storage_id, unsigned long long *bytes)
 	}
 
 	/* external storage */
-	ret = 0;
+	ret = storage_ext_get_space(storage_id,NULL, &avail);
 
 out:
 	if (ret < 0) {
