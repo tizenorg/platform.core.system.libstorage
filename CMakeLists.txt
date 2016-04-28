@@ -10,7 +10,15 @@ SET(VERSION 0.1)
 SET(INC_DIR include)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/${INC_DIR})
 
-SET(dependents "dlog capi-base-common vconf glib-2.0 libtzplatform-config capi-system-system-settings")
+SET(dependents
+		dlog
+		capi-base-common
+		vconf
+		glib-2.0
+		gio-2.0
+		libtzplatform-config
+		capi-system-system-settings
+)
 SET(pc_dependents "capi-base-common")
 
 INCLUDE(FindPkgConfig)
@@ -36,7 +44,8 @@ SET(SRCS
 	src/statvfs.c
 	src/storage.c
 	src/storage-internal.c
-	src/storage-sdcard.c)
+	src/storage-external.c
+	src/storage-external-dbus.c)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS} ${TARGET_SRCS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${rpkgs_LDFLAGS})
