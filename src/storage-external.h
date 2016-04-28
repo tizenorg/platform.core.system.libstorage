@@ -25,5 +25,6 @@ int storage_ext_foreach_device_list(storage_device_supported_cb callback, void *
 int storage_ext_register_cb(enum storage_cb_type type, struct storage_cb_info *info);
 int storage_ext_unregister_cb(enum storage_cb_type type, struct storage_cb_info *info);
 int storage_ext_get_root(int storage_id, char *path, size_t len);
+int storage_ext_get_state(int storage_id, storage_state_e *state);
 
 #endif /* __STORAGE_EXTERNAL_H__ */

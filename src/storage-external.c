@@ -220,3 +220,32 @@ out:
 	storage_ext_release_device(&dev);
 	return ret;
 }
+
+int storage_ext_get_state(int storage_id, storage_state_e *state)
+{
+	storage_ext_device *dev;
+	int ret;
+
+	if (storage_id < 0 || !state)
+		return -EINVAL;
+
+	dev = calloc(1, sizeof(storage_ext_device));
+	if (!dev) {
+		_E("calloc failed");
+		return -ENOMEM;
+	}
+
+	ret = storage_ext_get_device_info(storage_id, dev);
+	if (ret < 0) {
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		goto out;
+	}
+
+	ret = storage_ext_get_dev_state(dev, STORAGE_EXT_CHANGED, state);
+	if (ret < 0)
+		_E("Failed to get state of storage id (%d, ret:%d)", storage_id, ret);
+
+out:
+	storage_ext_release_device(&dev);
+	return ret;
+}

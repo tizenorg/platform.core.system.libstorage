@@ -205,9 +205,11 @@ API int storage_get_type(int storage_id, storage_type_e *type)
 API int storage_get_state(int storage_id, storage_state_e *state)
 {
 	const struct storage_ops *ops;
+	storage_state_e st;
 	dd_list *elem;
+	int ret;
 
-	if (!state) {
+	if (!state || storage_id < 0) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
@@ -221,7 +223,13 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 	}
 
 	/* external storage */
+	ret = storage_ext_get_state(storage_id, &st);
+	if (ret < 0) {
+		_E("Failed to get state (storage id(%d), ret(%d))", storage_id, ret);
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
 
+	*state = st;
 	return STORAGE_ERROR_NONE;
 }
 
