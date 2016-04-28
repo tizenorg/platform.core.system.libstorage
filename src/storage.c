@@ -24,6 +24,7 @@
 #include "common.h"
 #include "list.h"
 #include "log.h"
+#include "storage-external.h"
 
 const char *dir_path[STORAGE_DIRECTORY_MAX] = {
 	[STORAGE_DIRECTORY_IMAGES] = "Images",
@@ -68,7 +69,11 @@ API int storage_foreach_device_supported(storage_device_supported_cb callback, v
 			break;
 	}
 
-	/* TODO external storage */
+	ret = storage_ext_foreach_device_list(callback, user_data);
+	if (ret < 0) {
+		_E("Failed to iterate external devices (%d)", ret);
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
 
 	return STORAGE_ERROR_NONE;
 }
