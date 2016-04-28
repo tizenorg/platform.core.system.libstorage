@@ -444,3 +444,30 @@ void storage_ext_unregister_device_change(storage_ext_changed_cb func)
 		free(callback);
 	}
 }
+
+int storage_ext_get_device_info(int storage_id, storage_ext_device *info)
+{
+	GVariant *result;
+
+	result = dbus_method_call_sync(STORAGE_EXT_BUS_NAME,
+			STORAGE_EXT_PATH_MANAGER,
+			STORAGE_EXT_IFACE_MANAGER,
+			"GetDeviceInfoByID",
+			g_variant_new("(i)", storage_id));
+	if (!result) {
+		_E("There is no storage with the storage id (%d)", storage_id);
+		return -ENODEV;
+	}
+
+	g_variant_get(result, "(issssssisibii)",
+			&info->type, &info->devnode, &info->syspath,
+			&info->fs_usage, &info->fs_type,
+			&info->fs_version, &info->fs_uuid,
+			&info->readonly, &info->mount_point,
+			&info->state, &info->primary,
+			&info->flags, &info->storage_id);
+
+	g_variant_unref(result);
+
+	return 0;
+}

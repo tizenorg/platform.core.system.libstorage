@@ -192,3 +192,31 @@ int storage_ext_unregister_cb(enum storage_cb_type type, struct storage_cb_info 
 
 	return 0;
 }
+
+int storage_ext_get_root(int storage_id, char *path, size_t len)
+{
+	storage_ext_device *dev;
+	int ret;
+
+	if (storage_id < 0 || !path)
+		return -EINVAL;
+
+	dev = calloc(1, sizeof(storage_ext_device));
+	if (!dev) {
+		_E("calloc failed");
+		return -ENOMEM;
+	}
+
+	ret = storage_ext_get_device_info(storage_id, dev);
+	if (ret < 0) {
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		goto out;
+	}
+
+	snprintf(path, len, "%s", dev->mount_point);
+	ret = 0;
+
+out:
+	storage_ext_release_device(&dev);
+	return ret;
+}
