@@ -215,6 +215,8 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb callback, void *user_data)
 {
 	const struct storage_ops *st;
+	struct storage_cb_info info;
+	int ret;
 	dd_list *elem;
 
 	if (!callback) {
@@ -228,6 +230,15 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 			return STORAGE_ERROR_NONE;
 
 	/* external storage */
+	info.id = storage_id;
+	info.state_cb = callback;
+	info.user_data = user_data;
+
+	ret = storage_ext_register_cb(STORAGE_CALLBACK_STATE, &info);
+	if (ret < 0) {
+		_E("Failed to register callback : id(%d)", storage_id);
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
 
 	return STORAGE_ERROR_NONE;
 }
@@ -235,6 +246,8 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb callback)
 {
 	const struct storage_ops *st;
+	struct storage_cb_info info;
+	int ret;
 	dd_list *elem;
 
 	if (!callback) {
@@ -246,6 +259,16 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 	DD_LIST_FOREACH(st_int_head, elem, st)
 		if (st->storage_id == storage_id)
 			return STORAGE_ERROR_NONE;
+
+	/* external storage */
+	info.id = storage_id;
+	info.state_cb = callback;
+
+	ret = storage_ext_unregister_cb(STORAGE_CALLBACK_STATE, &info);
+	if (ret < 0) {
+		_E("Failed to unregister callback : id(%d)", storage_id);
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
 
 	return STORAGE_ERROR_NONE;
 }

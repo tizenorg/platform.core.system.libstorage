@@ -33,7 +33,22 @@
 
 #define STORAGE_EXT_GET_LIST       "GetDeviceList"
 
+#define STORAGE_EXT_OBJECT_ADDED   "ObjectAdded"
+#define STORAGE_EXT_OBJECT_REMOVED "ObjectRemoved"
+#define STORAGE_EXT_DEVICE_CHANGED "DeviceChanged"
+
 #define DBUS_REPLY_TIMEOUT (-1)
+
+#define DEV_PREFIX           "/dev/"
+
+struct storage_ext_callback {
+	storage_ext_changed_cb func;
+	void *data;
+	guint block_id;
+	guint blockmanager_id;
+};
+
+static dd_list *changed_list;
 
 static void storage_ext_release_internal(storage_ext_device *dev)
 {
@@ -192,4 +207,237 @@ int storage_ext_get_list(dd_list **list)
 err_out:
 	storage_ext_release_list(list);
 	return ret;
+}
+
+static char *get_devnode_from_path(char *path)
+{
+	if (!path)
+		return NULL;
+	/* 1 means '/' */
+	return path + strlen(STORAGE_EXT_PATH_DEVICES) + 1;
+}
+
+static void storage_ext_object_path_changed(enum storage_ext_state state,
+		GVariant *params, gpointer user_data)
+{
+	storage_ext_device *dev;
+	dd_list *elem;
+	struct storage_ext_callback *callback;
+	gchar *path;
+	char *devnode;
+	int ret;
+
+	if (!params)
+		return;
+
+	g_variant_get(params, "(&s)", &path);
+
+	devnode = get_devnode_from_path((char *)path);
+	if (!devnode)
+		return;
+
+	dev = calloc(1, sizeof(storage_ext_device *));
+	if (!dev)
+		return;
+
+	dev->devnode = strdup(devnode);
+	if (dev->devnode == NULL) {
+		_E("strdup() failed");
+		free(dev);
+		return;
+	}
+
+	DD_LIST_FOREACH(changed_list, elem, callback) {
+		if (!callback->func)
+			continue;
+		ret = callback->func(dev, state, callback->data);
+		if (ret < 0)
+			_E("Failed to call callback for devnode(%s, %d)", devnode, ret);
+	}
+
+	free(dev->devnode);
+	free(dev);
+}
+
+static void storage_ext_device_added(GVariant *params, gpointer user_data)
+{
+	storage_ext_object_path_changed(STORAGE_EXT_ADDED, params, user_data);
+}
+
+static void storage_ext_device_removed(GVariant *params, gpointer user_data)
+{
+	storage_ext_object_path_changed(STORAGE_EXT_REMOVED, params, user_data);
+}
+
+static void storage_ext_device_changed(GVariant *params, gpointer user_data)
+{
+	storage_ext_device *dev;
+	dd_list *elem;
+	struct storage_ext_callback *callback;
+	int ret;
+
+	if (!params)
+		return;
+
+	dev = calloc(1, sizeof(storage_ext_device));
+	if (!dev)
+		return;
+
+	g_variant_get(params, "(issssssisibii)",
+			&dev->type,
+			&dev->devnode,
+			&dev->syspath,
+			&dev->fs_usage,
+			&dev->fs_type,
+			&dev->fs_version,
+			&dev->fs_uuid,
+			&dev->readonly,
+			&dev->mount_point,
+			&dev->state,
+			&dev->primary,
+			&dev->flags,
+			&dev->storage_id);
+
+	DD_LIST_FOREACH(changed_list, elem, callback) {
+		if (!callback->func)
+			continue;
+		ret = callback->func(dev, STORAGE_EXT_CHANGED, callback->data);
+		if (ret < 0)
+			_E("Failed to call callback for devnode(%s, %d)", dev->devnode, ret);
+	}
+
+	free(dev);
+}
+
+static void storage_ext_changed(GDBusConnection *conn,
+		const gchar *sender,
+		const gchar *path,
+		const gchar *iface,
+		const gchar *signal,
+		GVariant *params,
+		gpointer user_data)
+{
+	size_t iface_len, signal_len;
+
+	if (!params || !sender || !path || !iface || !signal)
+		return;
+
+	iface_len = strlen(iface) + 1;
+	signal_len = strlen(signal) + 1;
+
+	if (!strncmp(iface, STORAGE_EXT_IFACE_MANAGER, iface_len)) {
+		if (!strncmp(signal, STORAGE_EXT_OBJECT_ADDED, signal_len))
+			storage_ext_device_added(params, user_data);
+		else if (!strncmp(signal, STORAGE_EXT_OBJECT_REMOVED, signal_len))
+			storage_ext_device_removed(params, user_data);
+		return;
+	}
+
+	if (!strncmp(iface, STORAGE_EXT_IFACE, iface_len) &&
+		!strncmp(signal, STORAGE_EXT_DEVICE_CHANGED, signal_len)) {
+		storage_ext_device_changed(params, user_data);
+		return;
+	}
+}
+
+int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
+{
+	GDBusConnection *conn;
+	guint block_id = NULL, blockmanager_id = NULL;
+	struct storage_ext_callback *callback;
+	dd_list *elem;
+
+	if (!func)
+		return -EINVAL;
+
+	DD_LIST_FOREACH(changed_list, elem, callback) {
+		if (callback->func != func)
+			continue;
+		if (callback->block_id == 0 || callback->blockmanager_id == 0)
+			continue;
+
+		return -EEXIST;
+	}
+
+	callback = (struct storage_ext_callback *)malloc(sizeof(struct storage_ext_callback));
+	if (!callback) {
+		_E("malloc() failed");
+		return -ENOMEM;
+	}
+
+	conn = get_dbus_connection();
+	if (!conn) {
+		free(callback);
+		_E("Failed to get dbus connection");
+		return -EPERM;
+	}
+
+	block_id = g_dbus_connection_signal_subscribe(conn,
+			STORAGE_EXT_BUS_NAME,
+			STORAGE_EXT_IFACE,
+			STORAGE_EXT_DEVICE_CHANGED,
+			NULL,
+			NULL,
+			G_DBUS_SIGNAL_FLAGS_NONE,
+			storage_ext_changed,
+			NULL,
+			NULL);
+	if (block_id == 0) {
+		free(callback);
+		_E("Failed to subscrive bus signal");
+		return -EPERM;
+	}
+
+	blockmanager_id = g_dbus_connection_signal_subscribe(conn,
+			STORAGE_EXT_BUS_NAME,
+			STORAGE_EXT_IFACE_MANAGER,
+			NULL,
+			STORAGE_EXT_PATH_MANAGER,
+			NULL,
+			G_DBUS_SIGNAL_FLAGS_NONE,
+			storage_ext_changed,
+			NULL,
+			NULL);
+	if (blockmanager_id == 0) {
+		free(callback);
+		_E("Failed to subscrive bus signal");
+		return -EPERM;
+	}
+
+	callback->func = func;
+	callback->data = data;
+	callback->block_id = block_id;
+	callback->blockmanager_id = blockmanager_id;
+
+	DD_LIST_APPEND(changed_list, callback);
+
+	return 0;
+}
+
+void storage_ext_unregister_device_change(storage_ext_changed_cb func)
+{
+	GDBusConnection *conn;
+	struct storage_ext_callback *callback;
+	dd_list *elem;
+
+	if (!func)
+		return;
+
+	conn = get_dbus_connection();
+	if (!conn) {
+		_E("fail to get dbus connection");
+		return;
+	}
+
+	DD_LIST_FOREACH(changed_list, elem, callback) {
+		if (callback->func != func)
+			continue;
+		if (callback->block_id > 0)
+			g_dbus_connection_signal_unsubscribe(conn, callback->block_id);
+		if (callback->blockmanager_id > 0)
+			g_dbus_connection_signal_unsubscribe(conn, callback->blockmanager_id);
+
+		DD_LIST_REMOVE(changed_list, callback);
+		free(callback);
+	}
 }
