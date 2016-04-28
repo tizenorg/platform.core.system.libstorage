@@ -59,6 +59,7 @@ struct storage_ops {
 	int (*get_space) (unsigned long long *total, unsigned long long *available);
 	int (*register_cb) (enum storage_cb_type type, struct storage_cb_info *info);
 	int (*unregister_cb) (enum storage_cb_type type, struct storage_cb_info *info);
+	int storage_id;
 };
 
 #define STORAGE_OPS_REGISTER(st)	\
