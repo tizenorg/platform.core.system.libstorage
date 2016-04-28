@@ -60,6 +60,51 @@ static int storage_ext_get_dev_state(storage_ext_device *dev,
 	}
 }
 
+int storage_ext_get_space(int storage_id,
+		unsigned long long *total, unsigned long long *available)
+{
+	storage_state_e state;
+	struct statvfs s;
+	int ret;
+	unsigned long long t = 0, a = 0;
+	storage_ext_device dev;
+
+	if (storage_id < 0)
+		return -EINVAL;
+
+	ret = storage_ext_get_device_info(storage_id, &dev);
+	if (ret < 0) {
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		return ret;
+	}
+
+	ret = storage_ext_get_dev_state(&dev, STORAGE_EXT_CHANGED, &state);
+	if (ret < 0) {
+		_E("Failed to get state of storage (id:%d, ret:%d)", storage_id, ret);
+		return ret;
+	}
+
+	if (state >= STORAGE_STATE_MOUNTED) {
+#ifndef __USE_FILE_OFFSET64
+		ret = storage_get_external_memory_size_with_path(dev.mount_point, &s);
+#else
+		ret = storage_get_external_memory_size64_with_path(dev.mount_point, &s);
+#endif
+		if (ret < 0)
+			return -EPERM;
+
+		t = (unsigned long long)s.f_frsize*s.f_blocks;
+		a = (unsigned long long)s.f_bsize*s.f_bavail;
+	}
+
+	if (total)
+		*total = t;
+	if (available)
+		*available = a;
+
+	return 0;
+}
+
 int storage_ext_foreach_device_list(storage_device_supported_cb callback, void *user_data)
 {
 	int ret;
@@ -226,4 +271,32 @@ int storage_ext_get_state(int storage_id, storage_state_e *state)
 	}
 
 	return storage_ext_get_dev_state(&dev, STORAGE_EXT_CHANGED, state);
+}
+
+int storage_ext_get_primary_mmc_path(char *path, size_t len)
+{
+	dd_list *list = NULL, *elem;
+	storage_ext_device *dev;
+	int ret;
+
+	ret = storage_ext_get_list(&list);
+	if (ret < 0) {
+		_E("Failed to get external storage list from deviced (%d)", errno);
+		return ret;
+	}
+
+	DD_LIST_FOREACH(list, elem, dev) {
+		if (dev->primary) {
+			snprintf(path, len, "%s", dev->mount_point);
+			ret = 0;
+			goto out;
+		}
+	}
+
+	ret = -ENODEV;
+
+out:
+	if (list)
+		storage_ext_release_list(&list);
+	return ret;
 }
