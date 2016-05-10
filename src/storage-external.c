@@ -70,7 +70,7 @@ int storage_ext_get_space(int storage_id,
 	storage_ext_device *dev;
 
 	if (storage_id < 0)
-		return -EINVAL;
+		return -ENOTSUP;
 
 	dev = calloc(1, sizeof(storage_ext_device));
 	if (!dev) {
@@ -254,7 +254,10 @@ int storage_ext_get_root(int storage_id, char *path, size_t len)
 	storage_ext_device *dev;
 	int ret;
 
-	if (storage_id < 0 || !path)
+	if (storage_id < 0)
+		return -ENOTSUP;
+
+	if (!path)
 		return -EINVAL;
 
 	dev = calloc(1, sizeof(storage_ext_device));
@@ -282,7 +285,10 @@ int storage_ext_get_state(int storage_id, storage_state_e *state)
 	storage_ext_device *dev;
 	int ret;
 
-	if (storage_id < 0 || !state)
+	if (storage_id < 0)
+		return -ENOTSUP;
+
+	if (!state)
 		return -EINVAL;
 
 	dev = calloc(1, sizeof(storage_ext_device));

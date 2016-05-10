@@ -85,7 +85,10 @@ API int storage_get_root_directory(int storage_id, char **path)
 	char root[PATH_MAX];
 	int ret;
 
-	if (!path || storage_id < 0) {
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
+
+	if (!path) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
@@ -128,7 +131,10 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 	dd_list *elem;
 	bool found;
 
-	if (!path || storage_id < 0) {
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
+
+	if (!path) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
@@ -195,7 +201,10 @@ API int storage_get_type(int storage_id, storage_type_e *type)
 	const struct storage_ops *st;
 	dd_list *elem;
 
-	if (!type || storage_id < 0) {
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
+
+	if (!type) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
@@ -221,7 +230,10 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 	dd_list *elem;
 	int ret;
 
-	if (!state || storage_id < 0) {
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
+
+	if (!state) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
@@ -251,6 +263,9 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 	struct storage_cb_info info;
 	int ret;
 	dd_list *elem;
+
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
 
 	if (!callback) {
 		_E("Invalid parameger");
@@ -283,6 +298,9 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 	int ret;
 	dd_list *elem;
 
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
+
 	if (!callback) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
@@ -313,7 +331,10 @@ API int storage_get_total_space(int storage_id, unsigned long long *bytes)
 	int ret;
 	dd_list *elem;
 
-	if (!bytes || storage_id < 0) {
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
+
+	if (!bytes) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
@@ -332,6 +353,8 @@ API int storage_get_total_space(int storage_id, unsigned long long *bytes)
 out:
 	if (ret < 0) {
 		_E("Failed to get total memory : id(%d)", storage_id);
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_NOT_SUPPORTED;
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -345,6 +368,9 @@ API int storage_get_available_space(int storage_id, unsigned long long *bytes)
 	unsigned long long avail;
 	int ret;
 	dd_list *elem;
+
+	if (storage_id < 0)
+		return STORAGE_ERROR_NOT_SUPPORTED;
 
 	if (!bytes) {
 		_E("Invalid parameger");
@@ -365,6 +391,8 @@ API int storage_get_available_space(int storage_id, unsigned long long *bytes)
 out:
 	if (ret < 0) {
 		_E("Failed to get available memory : id(%d)", storage_id);
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_NOT_SUPPORTED;
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
