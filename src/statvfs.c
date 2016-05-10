@@ -347,16 +347,16 @@ int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf)
 		snprintf(ext_path, sizeof(ext_path), "%s", path);
 	else {
 		ret = get_external_path(ext_path, sizeof(ext_path));
+		if (ret == -ENODEV)
+			goto out_nodev;
 		if (ret < 0) {
 			_E("Failed to get external path(%d)", ret);
 			return ret;
 		}
 	}
 
-	if (!mount_check(ext_path)) {
-		memset(buf, 0, sizeof(struct statvfs_32));
-		return 0;
-	}
+	if (!mount_check(ext_path))
+		goto out_nodev;
 
 	ret = get_memory_size(ext_path, &temp);
 	if (ret) {
@@ -365,6 +365,10 @@ int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf)
 	}
 
 	memcpy(buf, &temp, sizeof(temp));
+	return 0;
+
+out_nodev:
+	memset(buf, 0, sizeof(struct statvfs_32));
 	return 0;
 }
 
@@ -383,16 +387,16 @@ int storage_get_external_memory_size64_with_path(char *path, struct statvfs *buf
 		snprintf(ext_path, sizeof(ext_path), "%s", path);
 	else {
 		ret = get_external_path(ext_path, sizeof(ext_path));
+		if (ret == -ENODEV)
+			goto out_nodev;
 		if (ret < 0) {
 			_E("Failed to get external path(%d)", ret);
 			return ret;
 		}
 	}
 
-	if (!mount_check(ext_path)) {
-		memset(buf, 0, sizeof(struct statvfs));
-		return 0;
-	}
+	if (!mount_check(ext_path))
+		goto out_nodev;
 
 	ret = statvfs(ext_path, buf);
 	if (ret) {
@@ -400,6 +404,10 @@ int storage_get_external_memory_size64_with_path(char *path, struct statvfs *buf
 		return -errno;
 	}
 
+	return 0;
+
+out_nodev:
+	memset(buf, 0, sizeof(struct statvfs));
 	return 0;
 }
 
