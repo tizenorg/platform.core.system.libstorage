@@ -236,7 +236,7 @@ static void storage_ext_object_path_changed(enum storage_ext_state state,
 	if (!devnode)
 		goto out;
 
-	dev = calloc(1, sizeof(storage_ext_device *));
+	dev = calloc(1, sizeof(storage_ext_device));
 	if (!dev)
 		goto out;
 
