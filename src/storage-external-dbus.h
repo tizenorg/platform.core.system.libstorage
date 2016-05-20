@@ -25,8 +25,8 @@
 #include <gio/gio.h>
 #include "list.h"
 
-#define STORAGE_EXT_BUS_NAME              "org.tizen.system.deviced"
-#define STORAGE_EXT_PATH                  "/Org/Tizen/System/DeviceD/Block"
+#define STORAGE_EXT_BUS_NAME              "org.tizen.system.storage"
+#define STORAGE_EXT_PATH                  "/Org/Tizen/System/Storage/Block"
 #define STORAGE_EXT_PATH_DEVICES          STORAGE_EXT_PATH"/Devices"
 #define STORAGE_EXT_PATH_MANAGER          STORAGE_EXT_PATH"/Manager"
 #define STORAGE_EXT_IFACE                 STORAGE_EXT_BUS_NAME".Block"
