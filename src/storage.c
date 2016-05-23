@@ -71,6 +71,8 @@ API int storage_foreach_device_supported(storage_device_supported_cb callback, v
 
 	ret = storage_ext_foreach_device_list(callback, user_data);
 	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_NONE;
 		_E("Failed to iterate external devices (%d)", ret);
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
@@ -108,8 +110,10 @@ API int storage_get_root_directory(int storage_id, char **path)
 	/* external storage */
 	ret = storage_ext_get_root(storage_id, root, sizeof(root));
 	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_NONE;
 		_E("Failed to get root path of external storage(%d, %d", storage_id, ret);
-		return STORAGE_ERROR_INVALID_PARAMETER;
+		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
 	*path = strdup(root);
@@ -180,6 +184,8 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 
 	ret = storage_ext_get_root(storage_id, root, sizeof(root));
 	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_INVALID_PARAMETER;
 		_E("Failed to get root dir for external storage(id:%d, ret:%d)", storage_id, ret);
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
@@ -199,7 +205,9 @@ out:
 API int storage_get_type(int storage_id, storage_type_e *type)
 {
 	const struct storage_ops *st;
+	storage_type_e tp;
 	dd_list *elem;
+	int ret;
 
 	if (storage_id < 0)
 		return STORAGE_ERROR_NOT_SUPPORTED;
@@ -218,7 +226,14 @@ API int storage_get_type(int storage_id, storage_type_e *type)
 	}
 
 	/* external storage */
-	*type = STORAGE_TYPE_EXTERNAL;
+	ret = storage_ext_get_type(storage_id, &tp);
+	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_INVALID_PARAMETER;
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
+
+	*type = tp;
 
 	return STORAGE_ERROR_NONE;
 }
@@ -249,6 +264,8 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 	/* external storage */
 	ret = storage_ext_get_state(storage_id, &st);
 	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_INVALID_PARAMETER;
 		_E("Failed to get state (storage id(%d), ret(%d))", storage_id, ret);
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
@@ -284,6 +301,8 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 
 	ret = storage_ext_register_cb(STORAGE_CALLBACK_STATE, &info);
 	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_INVALID_PARAMETER;
 		_E("Failed to register callback : id(%d)", storage_id);
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
@@ -317,6 +336,8 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 
 	ret = storage_ext_unregister_cb(STORAGE_CALLBACK_STATE, &info);
 	if (ret < 0) {
+		if (ret == -ENOTSUP)
+			return STORAGE_ERROR_INVALID_PARAMETER;
 		_E("Failed to unregister callback : id(%d)", storage_id);
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
@@ -349,12 +370,12 @@ API int storage_get_total_space(int storage_id, unsigned long long *bytes)
 
 	/* external storage */
 	ret = storage_ext_get_space(storage_id, &total, NULL);
+	if (ret == -ENOTSUP)
+		return STORAGE_ERROR_INVALID_PARAMETER;
 
 out:
 	if (ret < 0) {
 		_E("Failed to get total memory : id(%d)", storage_id);
-		if (ret == -ENOTSUP)
-			return STORAGE_ERROR_NOT_SUPPORTED;
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -387,12 +408,12 @@ API int storage_get_available_space(int storage_id, unsigned long long *bytes)
 
 	/* external storage */
 	ret = storage_ext_get_space(storage_id,NULL, &avail);
+	if (ret == -ENOTSUP)
+		return STORAGE_ERROR_INVALID_PARAMETER;
 
 out:
 	if (ret < 0) {
 		_E("Failed to get available memory : id(%d)", storage_id);
-		if (ret == -ENOTSUP)
-			return STORAGE_ERROR_NOT_SUPPORTED;
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 

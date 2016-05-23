@@ -280,6 +280,34 @@ out:
 	return ret;
 }
 
+int storage_ext_get_type(int storage_id, storage_type_e *type)
+{
+	storage_ext_device *dev = NULL;
+	int ret;
+
+	if (storage_id < 0)
+		return -ENOTSUP;
+
+	if (!type)
+		return -EINVAL;
+
+	dev = calloc(1, sizeof(storage_ext_device));
+	if (!dev) {
+		_E("calloc failed");
+		return -ENOMEM;
+	}
+
+	ret = storage_ext_get_device_info(storage_id, dev);
+	if (ret < 0) {
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		return ret;
+	}
+
+	storage_ext_release_device(&dev);
+	*type = STORAGE_TYPE_EXTERNAL;
+	return 0;
+}
+
 int storage_ext_get_state(int storage_id, storage_state_e *state)
 {
 	storage_ext_device *dev;

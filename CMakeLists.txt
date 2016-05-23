@@ -15,11 +15,35 @@ SET(dependents
 		capi-base-common
 		vconf
 		glib-2.0
-		gio-2.0
 		libtzplatform-config
 		capi-system-system-settings
 )
 SET(pc_dependents "capi-base-common")
+
+SET(SRCS
+		src/statvfs.c
+		src/storage.c
+		src/storage-internal.c
+)
+
+SET(HEADERS
+		include/storage.h
+		include/storage-expand.h
+)
+
+IF(EXTERNAL_SUPPORTED STREQUAL on)
+	SET(dependents ${dependents}
+			gio-2.0
+	)
+	SET(SRCS ${SRCS}
+			src/storage-external.c
+			src/storage-external-dbus.c
+	)
+ELSE(EXTERNAL_SUPPORTED STREQUAL on)
+	SET(SRCS ${SRCS}
+			src/storage-external-notsupported.c
+	)
+ENDIF(EXTERNAL_SUPPORTED STREQUAL on)
 
 INCLUDE(FindPkgConfig)
 pkg_check_modules(rpkgs REQUIRED ${dependents})
@@ -28,10 +52,6 @@ FOREACH(flag ${rpkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
 
-SET(HEADERS
-	include/storage.h
-	include/storage-expand.h)
-
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden")
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -g")
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -Werror")
@@ -39,13 +59,6 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
 ADD_DEFINITIONS("-D_FILE_OFFSET_BITS=64")
 ADD_DEFINITIONS("-DENABLE_STORAGE_DLOG")
-
-SET(SRCS
-	src/statvfs.c
-	src/storage.c
-	src/storage-internal.c
-	src/storage-external.c
-	src/storage-external-dbus.c)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS} ${TARGET_SRCS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${rpkgs_LDFLAGS})
