@@ -1,3 +1,17 @@
+%define external_supported off
+
+%if "%{?profile}" == "mobile"
+%define external_supported on
+%endif
+
+%if "%{?profile}" == "wearable"
+%define external_supported off
+%endif
+
+%if "%{?profile}" == "tv"
+%define external_supported on
+%endif
+
 Name:       libstorage
 Summary:    Library to get storage information
 Version:    0.1.0
@@ -14,6 +28,10 @@ BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(libtzplatform-config)
 BuildRequires:  pkgconfig(capi-system-system-settings)
+
+%if %{?external_supported} == on
+BuildRequires:  pkgconfig(gio-2.0)
+%endif
 
 %description
 development package of library to get storage
@@ -32,7 +50,7 @@ Library to get storage information (devel)
 cp %{SOURCE1} .
 
 %build
-%cmake .
+%cmake . -DEXTERNAL_SUPPORTED=%{external_supported}
 make %{?jobs:-j%jobs}
 
 %install
