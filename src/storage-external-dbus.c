@@ -103,12 +103,14 @@ static GDBusConnection *get_dbus_connection(void)
 
 	conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
 	if (!conn) {
+//LCOV_EXCL_START System Error
 		if (err) {
 			_E("fail to get dbus connection : %s", err->message);
 			g_clear_error(&err);
 		} else
 			_E("fail to get dbus connection");
 		return NULL;
+//LCOV_EXCL_STOP
 	}
 	return conn;
 }
@@ -125,7 +127,7 @@ static GVariant *dbus_method_call_sync(const gchar *dest, const gchar *path,
 
 	conn = get_dbus_connection();
 	if (!conn) {
-		_E("fail to get dbus connection");
+		_E("fail to get dbus connection"); //LCOV_EXCL_LINE
 		return NULL;
 	}
 
@@ -134,12 +136,14 @@ static GVariant *dbus_method_call_sync(const gchar *dest, const gchar *path,
 			param, NULL, G_DBUS_CALL_FLAGS_NONE,
 			-1, NULL, &err);
 	if (!ret) {
+//LCOV_EXCL_START System Error
 		if (err) {
 			_E("dbus method sync call failed(%s)", err->message);
 			g_clear_error(&err);
 		} else
 			_E("g_dbus_connection_call_sync() failed");
 		return NULL;
+//LCOV_EXCL_STOP
 	}
 
 	return ret;
@@ -161,7 +165,7 @@ int storage_ext_get_list(dd_list **list)
 			STORAGE_EXT_GET_LIST,
 			g_variant_new("(s)", "all"));
 	if (!result) {
-		_E("Failed to get storage_ext device info");
+		_E("Failed to get storage_ext device info"); //LCOV_EXCL_LINE
 		return -EIO;
 	}
 
@@ -177,7 +181,7 @@ int storage_ext_get_list(dd_list **list)
 
 		elem = (storage_ext_device *)malloc(sizeof(storage_ext_device));
 		if (!elem) {
-			_E("malloc() failed");
+			_E("malloc() failed"); //LCOV_EXCL_LINE
 			ret = -ENOMEM;
 			goto out;
 		}
@@ -209,6 +213,7 @@ out:
 	return ret;
 }
 
+//LCOV_EXCL_START Not called Callback
 static char *get_devnode_from_path(char *path)
 {
 	if (!path)
@@ -216,7 +221,9 @@ static char *get_devnode_from_path(char *path)
 	/* 1 means '/' */
 	return path + strlen(STORAGE_EXT_PATH_DEVICES) + 1;
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START Not called Callback
 static void storage_ext_object_path_changed(enum storage_ext_state state,
 		GVariant *params, gpointer user_data)
 {
@@ -261,17 +268,23 @@ out:
 	}
 	free(path);
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START Not called Callback
 static void storage_ext_device_added(GVariant *params, gpointer user_data)
 {
 	storage_ext_object_path_changed(STORAGE_EXT_ADDED, params, user_data);
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START Not called Callback
 static void storage_ext_device_removed(GVariant *params, gpointer user_data)
 {
 	storage_ext_object_path_changed(STORAGE_EXT_REMOVED, params, user_data);
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START Not called Callback
 static void storage_ext_device_changed(GVariant *params, gpointer user_data)
 {
 	storage_ext_device *dev;
@@ -311,7 +324,9 @@ static void storage_ext_device_changed(GVariant *params, gpointer user_data)
 
 	storage_ext_release_device(&dev);
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START Not called Callback
 static void storage_ext_changed(GDBusConnection *conn,
 		const gchar *sender,
 		const gchar *path,
@@ -342,6 +357,7 @@ static void storage_ext_changed(GDBusConnection *conn,
 		return;
 	}
 }
+//LCOV_EXCL_STOP
 
 int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 {
@@ -364,15 +380,19 @@ int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 
 	callback = (struct storage_ext_callback *)malloc(sizeof(struct storage_ext_callback));
 	if (!callback) {
+//LCOV_EXCL_START System Error
 		_E("malloc() failed");
 		return -ENOMEM;
+//LCOV_EXCL_STOP
 	}
 
 	conn = get_dbus_connection();
 	if (!conn) {
+//LCOV_EXCL_START System Error
 		free(callback);
 		_E("Failed to get dbus connection");
 		return -EPERM;
+//LCOV_EXCL_STOP
 	}
 
 	block_id = g_dbus_connection_signal_subscribe(conn,
@@ -402,9 +422,11 @@ int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 			NULL,
 			NULL);
 	if (blockmanager_id == 0) {
+//LCOV_EXCL_START System Error
 		free(callback);
 		_E("Failed to subscrive bus signal");
 		return -EPERM;
+//LCOV_EXCL_STOP
 	}
 
 	callback->func = func;
@@ -428,8 +450,10 @@ void storage_ext_unregister_device_change(storage_ext_changed_cb func)
 
 	conn = get_dbus_connection();
 	if (!conn) {
+//LCOV_EXCL_START System Error
 		_E("fail to get dbus connection");
 		return;
+//LCOV_EXCL_STOP
 	}
 
 	DD_LIST_FOREACH(changed_list, elem, callback) {
@@ -455,7 +479,7 @@ int storage_ext_get_device_info(int storage_id, storage_ext_device *info)
 			"GetDeviceInfoByID",
 			g_variant_new("(i)", storage_id));
 	if (!result) {
-		_E("There is no storage with the storage id (%d)", storage_id);
+		_E("There is no storage with the storage id (%d)", storage_id); //LCOV_EXCL_LINE
 		return -ENODEV;
 	}
 

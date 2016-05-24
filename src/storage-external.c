@@ -74,19 +74,21 @@ int storage_ext_get_space(int storage_id,
 
 	dev = calloc(1, sizeof(storage_ext_device));
 	if (!dev) {
+//LCOV_EXCL_START System Error
 		_E("calloc failed");
 		return -ENOMEM;
+//LCOV_EXCL_STOP
 	}
 
 	ret = storage_ext_get_device_info(storage_id, dev);
 	if (ret < 0) {
-		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 		goto out;
 	}
 
 	ret = storage_ext_get_dev_state(dev, STORAGE_EXT_CHANGED, &state);
 	if (ret < 0) {
-		_E("Failed to get state of storage (id:%d, ret:%d)", storage_id, ret);
+		_E("Failed to get state of storage (id:%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 		goto out;
 	}
 
@@ -97,7 +99,7 @@ int storage_ext_get_space(int storage_id,
 		ret = storage_get_external_memory_size64_with_path(dev->mount_point, &s);
 #endif
 		if (ret < 0) {
-			_E("Failed to get external memory size of (%s)(ret:%d)", dev->mount_point, ret);
+			_E("Failed to get external memory size of (%s)(ret:%d)", dev->mount_point, ret); //LCOV_EXCL_LINE
 			goto out;
 		}
 
@@ -129,14 +131,14 @@ int storage_ext_foreach_device_list(storage_device_supported_cb callback, void *
 
 	ret = storage_ext_get_list(&list);
 	if (ret < 0) {
-		_E("Failed to get external storage list from deviced (%d)", errno);
+		_E("Failed to get external storage list from deviced (%d)", errno); //LCOV_EXCL_LINE
 		return ret;
 	}
 
 	DD_LIST_FOREACH(list, elem, dev) {
 		ret = storage_ext_get_dev_state(dev, STORAGE_EXT_CHANGED, &state);
 		if (ret < 0) {
-			_E("Failed to get storage state (devnode:%s, ret:%d)", dev->devnode, ret);
+			_E("Failed to get storage state (devnode:%s, ret:%d)", dev->devnode, ret); //LCOV_EXCL_LINE
 			continue;
 		}
 
@@ -151,6 +153,7 @@ int storage_ext_foreach_device_list(storage_device_supported_cb callback, void *
 	return 0;
 }
 
+//LCOV_EXCL_START Not called Callback
 static int storage_ext_state_changed(storage_ext_device *dev, enum storage_ext_state blk_state, void *data)
 {
 	enum storage_cb_type type = (enum storage_cb_type)data;
@@ -176,6 +179,7 @@ static int storage_ext_state_changed(storage_ext_device *dev, enum storage_ext_s
 
 	return 0;
 }
+//LCOV_EXCL_STOP
 
 int storage_ext_register_cb(enum storage_cb_type type, struct storage_cb_info *info)
 {
@@ -262,13 +266,15 @@ int storage_ext_get_root(int storage_id, char *path, size_t len)
 
 	dev = calloc(1, sizeof(storage_ext_device));
 	if (!dev) {
+//LCOV_EXCL_START System Error
 		_E("calloc failed");
 		return -ENOMEM;
+//LCOV_EXCL_STOP
 	}
 
 	ret = storage_ext_get_device_info(storage_id, dev);
 	if (ret < 0) {
-		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 		goto out;
 	}
 
@@ -293,19 +299,21 @@ int storage_ext_get_state(int storage_id, storage_state_e *state)
 
 	dev = calloc(1, sizeof(storage_ext_device));
 	if (!dev) {
+//LCOV_EXCL_START System Error
 		_E("calloc failed");
 		return -ENOMEM;
+//LCOV_EXCL_STOP
 	}
 
 	ret = storage_ext_get_device_info(storage_id, dev);
 	if (ret < 0) {
-		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret);
+		_E("Cannot get the storage with id (%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 		goto out;
 	}
 
 	ret = storage_ext_get_dev_state(dev, STORAGE_EXT_CHANGED, state);
 	if (ret < 0)
-		_E("Failed to get state of storage id (%d, ret:%d)", storage_id, ret);
+		_E("Failed to get state of storage id (%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 
 out:
 	storage_ext_release_device(&dev);
@@ -320,7 +328,7 @@ int storage_ext_get_primary_mmc_path(char *path, size_t len)
 
 	ret = storage_ext_get_list(&list);
 	if (ret < 0) {
-		_E("Failed to get external storage list from deviced (%d)", errno);
+		_E("Failed to get external storage list from deviced (%d)", errno); //LCOV_EXCL_LINE
 		return ret;
 	}
 

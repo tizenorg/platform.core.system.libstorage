@@ -71,7 +71,7 @@ API int storage_foreach_device_supported(storage_device_supported_cb callback, v
 
 	ret = storage_ext_foreach_device_list(callback, user_data);
 	if (ret < 0) {
-		_E("Failed to iterate external devices (%d)", ret);
+		_E("Failed to iterate external devices (%d)", ret); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -99,8 +99,10 @@ API int storage_get_root_directory(int storage_id, char **path)
 			continue;
 		*path = strdup(st->root());
 		if (!*path) {
+//LCOV_EXCL_START System Error
 			_E("Failed to copy the root string : %d", errno);
 			return STORAGE_ERROR_OUT_OF_MEMORY;
+//LCOV_EXCL_STOP
 		}
 		return STORAGE_ERROR_NONE;
 	}
@@ -108,7 +110,7 @@ API int storage_get_root_directory(int storage_id, char **path)
 	/* external storage */
 	ret = storage_ext_get_root(storage_id, root, sizeof(root));
 	if (ret < 0) {
-		_E("Failed to get root path of external storage(%d, %d", storage_id, ret);
+		_E("Failed to get root path of external storage(%d, %d", storage_id, ret); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_INVALID_PARAMETER;
 	}
 
@@ -158,7 +160,7 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 		if (type == STORAGE_DIRECTORY_SYSTEM_RINGTONES) {
 			ret = system_settings_get_value_string(SYSTEM_SETTINGS_KEY_INCOMING_CALL_RINGTONE, &temp2);
 			if (ret < 0) {
-				_E("Failed to get ringtone path : %d", ret);
+				_E("Failed to get ringtone path : %d", ret); //LCOV_EXCL_LINE
 				return STORAGE_ERROR_OPERATION_FAILED;
 			}
 			end = strrchr(temp2, '/');
@@ -174,13 +176,13 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 
 	/* external storage */
 	if (type == STORAGE_DIRECTORY_SYSTEM_RINGTONES) {
-		_E("Not support directory : id(%d) type(%d)", storage_id, type);
+		_E("Not support directory : id(%d) type(%d)", storage_id, type); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_NOT_SUPPORTED;
 	}
 
 	ret = storage_ext_get_root(storage_id, root, sizeof(root));
 	if (ret < 0) {
-		_E("Failed to get root dir for external storage(id:%d, ret:%d)", storage_id, ret);
+		_E("Failed to get root dir for external storage(id:%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -189,7 +191,7 @@ API int storage_get_directory(int storage_id, storage_directory_e type, char **p
 out:
 	*path = strdup(temp);
 	if (!*path) {
-		_E("Failed to copy the directory(%d) string : %d", type, errno);
+		_E("Failed to copy the directory(%d) string : %d", type, errno); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -249,7 +251,7 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 	/* external storage */
 	ret = storage_ext_get_state(storage_id, &st);
 	if (ret < 0) {
-		_E("Failed to get state (storage id(%d), ret(%d))", storage_id, ret);
+		_E("Failed to get state (storage id(%d), ret(%d))", storage_id, ret); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -284,7 +286,7 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 
 	ret = storage_ext_register_cb(STORAGE_CALLBACK_STATE, &info);
 	if (ret < 0) {
-		_E("Failed to register callback : id(%d)", storage_id);
+		_E("Failed to register callback : id(%d)", storage_id); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -317,7 +319,7 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 
 	ret = storage_ext_unregister_cb(STORAGE_CALLBACK_STATE, &info);
 	if (ret < 0) {
-		_E("Failed to unregister callback : id(%d)", storage_id);
+		_E("Failed to unregister callback : id(%d)", storage_id); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
@@ -352,7 +354,7 @@ API int storage_get_total_space(int storage_id, unsigned long long *bytes)
 
 out:
 	if (ret < 0) {
-		_E("Failed to get total memory : id(%d)", storage_id);
+		_E("Failed to get total memory : id(%d)", storage_id); //LCOV_EXCL_LINE
 		if (ret == -ENOTSUP)
 			return STORAGE_ERROR_NOT_SUPPORTED;
 		return STORAGE_ERROR_OPERATION_FAILED;
@@ -390,7 +392,7 @@ API int storage_get_available_space(int storage_id, unsigned long long *bytes)
 
 out:
 	if (ret < 0) {
-		_E("Failed to get available memory : id(%d)", storage_id);
+		_E("Failed to get available memory : id(%d)", storage_id); //LCOV_EXCL_LINE
 		if (ret == -ENOTSUP)
 			return STORAGE_ERROR_NOT_SUPPORTED;
 		return STORAGE_ERROR_OPERATION_FAILED;

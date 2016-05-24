@@ -112,7 +112,7 @@ static int config_parse(const char *file_name, int cb(struct parse_result *resul
 	/* open conf file */
 	f = fopen(file_name, "r");
 	if (!f) {
-		_E("Failed to open file %s", file_name);
+		_E("Failed to open file %s", file_name); //LCOV_EXCL_LINE
 		ret = -EIO;
 		goto error;
 	}
@@ -172,7 +172,7 @@ static int config_parse(const char *file_name, int cb(struct parse_result *resul
 error:
 	if (f)
 		fclose(f);
-	_E("Failed to read %s:%d!", file_name, lineno);
+	_E("Failed to read %s:%d!", file_name, lineno); //LCOV_EXCL_LINE
 	return ret;
 }
 
@@ -210,7 +210,7 @@ static void storage_config_load(struct storage_config_info *info)
 
 	ret = config_parse(STORAGE_CONF_FILE, load_config, info);
 	if (ret < 0)
-		_E("Failed to load %s, %d Use default value!", STORAGE_CONF_FILE, ret);
+		_E("Failed to load %s, %d Use default value!", STORAGE_CONF_FILE, ret); //LCOV_EXCL_LINE
 }
 
 static int get_memory_size(const char *path, struct statvfs_32 *buf)
@@ -254,7 +254,7 @@ API int storage_get_internal_memory_size(struct statvfs *buf)
 
 	ret = get_memory_size(tzplatform_getenv(TZ_SYS_HOME), &temp);
 	if (ret || temp.f_bsize == 0) {
-		_E("fail to get memory size");
+		_E("fail to get memory size"); //LCOV_EXCL_LINE
 		return -errno;
 	}
 
@@ -281,13 +281,13 @@ API int storage_get_internal_memory_size64(struct statvfs *buf)
 	int ret;
 
 	if (!buf) {
-		_E("input param error");
+		_E("input param error"); //LCOV_EXCL_LINE
 		return -EINVAL;
 	}
 
 	ret = statvfs(tzplatform_getenv(TZ_SYS_HOME), buf);
 	if (ret) {
-		_E("fail to get memory size");
+		_E("fail to get memory size"); //LCOV_EXCL_LINE
 		return -errno;
 	}
 
@@ -350,7 +350,7 @@ int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf)
 		if (ret == -ENODEV)
 			goto out_nodev;
 		if (ret < 0) {
-			_E("Failed to get external path(%d)", ret);
+			_E("Failed to get external path(%d)", ret); //LCOV_EXCL_LINE
 			return ret;
 		}
 	}
@@ -360,7 +360,7 @@ int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf)
 
 	ret = get_memory_size(ext_path, &temp);
 	if (ret) {
-		_E("fail to get memory size");
+		_E("fail to get memory size"); //LCOV_EXCL_LINE
 		return -errno;
 	}
 
