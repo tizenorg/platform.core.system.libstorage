@@ -108,10 +108,10 @@ int storage_foreach_device_supported(storage_device_supported_cb callback, void 
 
 /**
  * @brief Gets the absolute path to the root directory of the given storage.
- * @details Files saved on the internal/external storage are readable or writeable by all applications.
- *          When an application is uninstalled, the files written by that application are not removed from the internal/external storage.
- *
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
+ *
+ * @note Files saved on the internal/external storage are readable or writable by all applications.
+ *       When an application is uninstalled, the files written by that application are not removed from the internal/external storage.
  *
  * @remarks If you want to access files or directories in internal storage, you must declare http://tizen.org/privilege/mediastorage.\n
  * If you want to access files or directories in external storage, you must declare http://tizen.org/privilege/externalstorage.\n
@@ -151,10 +151,10 @@ typedef enum {
 
 /**
  * @brief Gets the absolute path to the each directory of the given storage.
- * @details Files saved on the internal/external storage are readable or writeable by all applications.
- *          When an application is uninstalled, the files written by that application are not removed from the internal/external storage.
- *
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
+ *
+ * @note Files saved on the internal/external storage are readable or writable by all applications.
+ *       When an application is uninstalled, the files written by that application are not removed from the internal/external storage.
  *
  * @remarks The directory path may not exist, so you must make sure that it exists before using it.\n
  * If you want to access files or directories in internal storage except #STORAGE_DIRECTORY_SYSTEM_RINGTONES, you must declare http://tizen.org/privilege/mediastorage.\n
@@ -274,6 +274,83 @@ int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb callba
  * @see storage_set_state_changed_cb()
  */
 int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb callback);
+
+/**
+ * @brief Enumeration of storage device types
+ * @since_tizen 3.0
+ */
+typedef enum {
+	STORAGE_DEV_EXT_SDCARD = 1001,     /**< sdcard device (external storage) */
+	STORAGE_DEV_EXT_USB_MASS_STORAGE,  /**< USB storage device (external storage) */
+} storage_dev_e;
+
+/**
+ * @brief Called when the state of a storage type changes.
+ *
+ * @since_tizen 3.0
+ *
+ * @param[in] storage_id The unique storage ID
+ * @param[in] type The type of the storage device
+ * @param[in] state The state of the storage
+ * @param[in] fstype The type of the file system
+ * @param[in] fsuuid The uuid of the file system
+ * @param[in] mountpath The mount path of the file system
+ * @param[in] primary The primary partition
+ * @param[in] flags The flags for the storage status
+ * @param[in] user_data The user data
+ *
+ * @pre	storage_set_changed_cb() will invoke this callback function.
+ * @see	storage_set_changed_cb()
+ * @see	storage_unset_changed_cb()
+ */
+typedef void (*storage_changed_cb)(int storage_id,
+		storage_dev_e dev, storage_state_e state,
+		const char *fstype, const char *fsuuid, const char *mountpath,
+		bool primary, int flags, void *user_data);
+
+/**
+ * @brief Registers a callback function to be invoked when the state of the specified storage device type changes.
+ *
+ * @since_tizen 3.0
+ *
+ * @param[in] type The type of the storage device
+ * @param[in] callback The callback function to register
+ * @param[in] user_data The user data to be passed to the callback function
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ *
+ * @retval #STORAGE_ERROR_NONE               Successful
+ * @retval #STORAGE_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval #STORAGE_ERROR_NOT_SUPPORTED      Storage not supported
+ * @retval #STORAGE_ERROR_OPERATION_FAILED   Operation failed
+ *
+ * @post storage_changed_cb() will be invoked if the state of the registered storage type changes.
+ * @see storage_changed_cb()
+ * @see storage_unset_changed_cb()
+ */
+int storage_set_changed_cb(storage_type_e type, storage_changed_cb callback, void *user_data);
+
+/**
+ * @brief Unregisters the callback function for storage type state changes.
+ *
+ * @since_tizen 3.0
+ *
+ * @param[in] type The type of the the storage device
+ * @param[in] callback The callback function to unregister
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ *
+ * @retval #STORAGE_ERROR_NONE               Successful
+ * @retval #STORAGE_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval #STORAGE_ERROR_NOT_SUPPORTED      Storage not supported
+ * @retval #STORAGE_ERROR_OPERATION_FAILED   Operation failed
+ *
+ * @see storage_changed_cb()
+ * @see storage_set_changed_cb()
+ */
+int storage_unset_changed_cb(storage_type_e type, storage_changed_cb callback);
 
 /**
  * @brief Gets the total space of the given storage in bytes.
