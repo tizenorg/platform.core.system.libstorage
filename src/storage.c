@@ -284,7 +284,7 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 	info.state_cb = callback;
 	info.user_data = user_data;
 
-	ret = storage_ext_register_cb(STORAGE_CALLBACK_STATE, &info);
+	ret = storage_ext_register_cb(STORAGE_CALLBACK_ID, &info);
 	if (ret < 0) {
 		_E("Failed to register callback : id(%d)", storage_id); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
@@ -317,7 +317,7 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 	info.id = storage_id;
 	info.state_cb = callback;
 
-	ret = storage_ext_unregister_cb(STORAGE_CALLBACK_STATE, &info);
+	ret = storage_ext_unregister_cb(STORAGE_CALLBACK_ID, &info);
 	if (ret < 0) {
 		_E("Failed to unregister callback : id(%d)", storage_id); //LCOV_EXCL_LINE
 		return STORAGE_ERROR_OPERATION_FAILED;
@@ -399,5 +399,72 @@ out:
 	}
 
 	*bytes = avail;
+	return STORAGE_ERROR_NONE;
+}
+
+API int storage_set_changed_cb(storage_type_e type, storage_changed_cb callback, void *user_data)
+{
+	int ret;
+	struct storage_cb_info info;
+
+	if (type == STORAGE_TYPE_INTERNAL) {
+		_E("Internal storage is not supported");
+		return STORAGE_ERROR_NOT_SUPPORTED;
+	}
+
+	if (type != STORAGE_TYPE_EXTERNAL) {
+		_E("Invalid type (%d)", type);
+		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	if (!callback) {
+		_E("Callback is NULL");
+		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	/* external storage */
+	info.type = type;
+	info.type_cb = callback;
+	info.user_data = user_data;
+
+	ret = storage_ext_register_cb(STORAGE_CALLBACK_TYPE, &info);
+	if (ret < 0) {
+		_E("Failed to register storage callback(ret:%d)", ret); //LCOV_EXCL_LINE
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
+
+	return STORAGE_ERROR_NONE;
+}
+
+API int storage_unset_changed_cb(storage_type_e type, storage_changed_cb callback)
+{
+	struct storage_cb_info info;
+	int ret;
+
+	if (type == STORAGE_TYPE_INTERNAL) {
+		_E("Internal storage is not supported");
+		return STORAGE_ERROR_NOT_SUPPORTED;
+	}
+
+	if (type != STORAGE_TYPE_EXTERNAL) {
+		_E("Invalid type (%d)", type);
+		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	if (!callback) {
+		_E("Callback is NULL");
+		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	/* external storage */
+	info.type = type;
+	info.type_cb = callback;
+
+	ret = storage_ext_unregister_cb(STORAGE_CALLBACK_TYPE, &info);
+	if (ret < 0) {
+		_E("Failed to unregister storage callback(ret:%d)", ret); //LCOV_EXCL_LINE
+		return STORAGE_ERROR_OPERATION_FAILED;
+	}
+
 	return STORAGE_ERROR_NONE;
 }
