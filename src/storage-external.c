@@ -38,6 +38,9 @@ static int storage_ext_get_dev_state(storage_ext_device *dev,
 		return -EINVAL;
 
 	switch (blk_state) {
+	case STORAGE_EXT_ADDED:
+		*state = STORAGE_STATE_UNMOUNTABLE;
+		return 0;
 	case STORAGE_EXT_REMOVED:
 		*state = STORAGE_STATE_REMOVED;
 		return 0;
@@ -154,7 +157,7 @@ int storage_ext_foreach_device_list(storage_device_supported_cb callback, void *
 }
 
 //LCOV_EXCL_START Not called Callback
-static int storage_ext_state_changed(storage_ext_device *dev, enum storage_ext_state blk_state, void *data)
+static int storage_ext_id_changed(storage_ext_device *dev, enum storage_ext_state blk_state, void *data)
 {
 	enum storage_cb_type type = (enum storage_cb_type)data;
 	struct storage_cb_info *cb_info;
@@ -165,7 +168,7 @@ static int storage_ext_state_changed(storage_ext_device *dev, enum storage_ext_s
 	if (!dev)
 		return -EINVAL;
 
-	if (type != STORAGE_CALLBACK_STATE)
+	if (type != STORAGE_CALLBACK_ID)
 		return 0;
 
 	ret = storage_ext_get_dev_state(dev, blk_state, &state);
@@ -174,38 +177,124 @@ static int storage_ext_state_changed(storage_ext_device *dev, enum storage_ext_s
 		return ret;
 	}
 
-	DD_LIST_FOREACH(cb_list[STORAGE_CALLBACK_STATE], elem, cb_info)
+	DD_LIST_FOREACH(cb_list[STORAGE_CALLBACK_ID], elem, cb_info)
 		cb_info->state_cb(cb_info->id, state, cb_info->user_data);
 
 	return 0;
 }
+
+static int storage_ext_type_changed(storage_ext_device *dev, enum storage_ext_state blk_state, void *data)
+{
+	enum storage_cb_type type = (enum storage_cb_type)data;
+	struct storage_cb_info *cb_info;
+	dd_list *elem;
+	storage_state_e state;
+	int ret;
+	storage_dev_e strdev;
+	const char *fstype, *fsuuid, *mountpath;
+
+	if (!dev)
+		return -EINVAL;
+
+	if (type != STORAGE_CALLBACK_TYPE)
+		return -EINVAL;
+
+	ret = storage_ext_get_dev_state(dev, blk_state, &state);
+	if (ret < 0) {
+		_E("Failed to get storage state (devnode:%s, ret:%d)", dev->devnode, ret);
+		return ret;
+	}
+
+	if (dev->type == STORAGE_EXT_SCSI)
+		strdev = STORAGE_DEV_EXT_USB_MASS_STORAGE;
+	else if (dev->type == STORAGE_EXT_MMC)
+		strdev = STORAGE_DEV_EXT_SDCARD;
+	else {
+		_E("Invalid dev type (%d)", dev->type);
+		return -EINVAL;
+	}
+
+	fstype = (dev->fs_type ? (const char *)dev->fs_type : "");
+	fsuuid = (dev->fs_uuid ? (const char *)dev->fs_uuid : "");
+	mountpath = (dev->mount_point ? (const char *)dev->mount_point : "");
+
+	DD_LIST_FOREACH(cb_list[STORAGE_CALLBACK_TYPE], elem, cb_info)
+		if (cb_info->type_cb)
+			cb_info->type_cb(dev->storage_id, strdev, state,
+					fstype, fsuuid, mountpath, dev->primary,
+					dev->flags, cb_info->user_data);
+
+	return 0;
+}
+
 //LCOV_EXCL_STOP
+
+static bool check_if_callback_exist(enum storage_cb_type type,
+		struct storage_cb_info *info, struct storage_cb_info **cb_data)
+{
+	struct storage_cb_info *cb_info;
+	dd_list *elem;
+
+	if (!info)
+		return false;
+
+	if (type == STORAGE_CALLBACK_ID) {
+		DD_LIST_FOREACH(cb_list[type], elem, cb_info) {
+			if (cb_info->id == info->id &&
+			    cb_info->state_cb == info->state_cb) {
+				goto out;
+			}
+		}
+	}
+
+	if (type == STORAGE_CALLBACK_TYPE) {
+		DD_LIST_FOREACH(cb_list[type], elem, cb_info) {
+			if (cb_info->type == info->type &&
+			    cb_info->type_cb == info->type_cb)
+				goto out;
+		}
+	}
+
+	return false;
+
+out:
+	if (cb_data)
+		*cb_data = cb_info;
+
+	return true;
+}
 
 int storage_ext_register_cb(enum storage_cb_type type, struct storage_cb_info *info)
 {
 	struct storage_cb_info *cb_info;
-	dd_list *elem;
-	int ret, n;
-
-	if (type < 0 || type >= STORAGE_CALLBACK_MAX)
-		return -EINVAL;
+	int n, ret;
+	storage_ext_changed_cb callback;
 
 	if (!info)
 		return -EINVAL;
 
-	/* check if it is the first request */
+	switch (type) {
+	case STORAGE_CALLBACK_ID:
+		callback = storage_ext_id_changed;
+		break;
+	case STORAGE_CALLBACK_TYPE:
+		callback = storage_ext_type_changed;
+		break;
+	default:
+		_E("Invalid callback type (%d)", type);
+		return -EINVAL;
+	}
+
 	n = DD_LIST_LENGTH(cb_list[type]);
 	if (n == 0) {
-		ret = storage_ext_register_device_change(storage_ext_state_changed, (void *)type);
+		ret = storage_ext_register_device_change(callback, (void *)type);
 		if (ret < 0)
 			return -EPERM;
 	}
 
-	/* check for the same request */
-	DD_LIST_FOREACH(cb_list[type], elem, cb_info) {
-		if (cb_info->id == info->id &&
-		    cb_info->state_cb == info->state_cb)
-			return -EEXIST;
+	if (check_if_callback_exist(type, info, NULL)) {
+		_E("The callback is already registered");
+		return 0;
 	}
 
 	/* add device changed callback to list (local) */
@@ -222,33 +311,39 @@ int storage_ext_register_cb(enum storage_cb_type type, struct storage_cb_info *i
 int storage_ext_unregister_cb(enum storage_cb_type type, struct storage_cb_info *info)
 {
 	struct storage_cb_info *cb_info;
-	dd_list *elem;
 	int n;
-
-	if (type < 0 || type >= STORAGE_CALLBACK_MAX)
-		return -EINVAL;
+	storage_ext_changed_cb callback;
 
 	if (!info)
 		return -EINVAL;
 
-	/* search for the same element with callback */
-	DD_LIST_FOREACH(cb_list[type], elem, cb_info) {
-		if (cb_info->id == info->id &&
-		    cb_info->state_cb == info->state_cb)
-			break;
+	switch (type) {
+	case STORAGE_CALLBACK_ID:
+		callback = storage_ext_id_changed;
+		break;
+	case STORAGE_CALLBACK_TYPE:
+		callback = storage_ext_type_changed;
+		break;
+	default:
+		_E("Invalid callback type (%d)", type);
+		return -EINVAL;
 	}
 
-	if (!cb_info)
-		return -EINVAL;
+	if (!check_if_callback_exist(type, info, &cb_info)) {
+		_E("The callback is not registered");
+		return 0;
+	}
 
 	/* remove device callback from list (local) */
-	DD_LIST_REMOVE(cb_list[type], cb_info);
-	free(cb_info);
+	if (cb_info) {
+		DD_LIST_REMOVE(cb_list[type], cb_info);
+		free(cb_info);
+	}
 
 	/* check if this callback is last element */
 	n = DD_LIST_LENGTH(cb_list[type]);
 	if (n == 0)
-		storage_ext_unregister_device_change(storage_ext_state_changed);
+		storage_ext_unregister_device_change(callback);
 
 	return 0;
 }

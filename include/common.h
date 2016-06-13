@@ -43,13 +43,16 @@ extern "C" {
 #endif
 
 enum storage_cb_type {
-	STORAGE_CALLBACK_STATE,
+	STORAGE_CALLBACK_ID,
+	STORAGE_CALLBACK_TYPE,
 	STORAGE_CALLBACK_MAX,
 };
 
 struct storage_cb_info {
 	int id;
+	storage_type_e type;
 	storage_state_changed_cb state_cb;
+	storage_changed_cb type_cb;
 	void *user_data;
 };
 
