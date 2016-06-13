@@ -275,6 +275,79 @@ int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb callba
  */
 int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb callback);
 
+typedef enum {
+	STORAGE_TYPE_EXT_SCSI = 1001,
+	STORAGE_TYPE_EXT_SDCARD,
+} storage_dev_type_e;
+
+/**
+ * @brief Called when a certain type of storage states are changed
+ *
+ * @since_tizen 3.0
+ *
+ * @param[in] storage_id The unique storage ID
+ * @param[in] type The type of the storage in detail
+ * @param[in] state The state of the storage
+ * @param[in] fstype The type of the file system
+ * @param[in] fsuuid The uuid of the file system
+ * @param[in] mountpath The mount path of the file system
+ * @param[in] primary The primary partition
+ * @param[in] flags The flags for the storage status
+ * @param[in] user_data The user data
+ *
+ * @pre	storage_set_changed_cb() will invoke this callback function.
+ * @see	storage_set_changed_cb()
+ * @see	storage_unset_changed_cb()
+ */
+typedef void (*storage_changed_cb)(int storage_id,
+		storage_dev_type_e type, storage_state_e state,
+		const char *fstype, const char *fsuuid, const char *mountpath,
+		bool primary, int flags, void *user_data);
+
+/**
+ * @brief Register a callback function to be invoked when a certain type of storage states are changeds.
+ *
+ * @since_tizen 3.0
+ *
+ * @param[in] type The type of the the storage device
+ * @param[in] callback The callback function to register
+ * @param[in] user_data The user data to be passed to the callback function
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ *
+ * @retval #STORAGE_ERROR_NONE               Successful
+ * @retval #STORAGE_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval #STORAGE_ERROR_NOT_SUPPORTED      Storage not supported
+ * @retval #STORAGE_ERROR_OPERATION_FAILED Operation failed
+ *
+ * @post storage_changed_cb() will be invoked if the state of the registered storage changes.
+ * @see storage_changed_cb()
+ * @see storage_unset_changed_cb()
+ */
+int storage_set_changed_cb(storage_type_e type, storage_changed_cb callback, void *user_data);
+
+/**
+ * @brief Unregister the callback function.
+ *
+ * @since_tizen 3.0
+ *
+ * @param[in] type The type of the the storage device
+ * @param[in] callback The callback function to unregister
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ *
+ * @retval #STORAGE_ERROR_NONE               Successful
+ * @retval #STORAGE_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval #STORAGE_ERROR_NOT_SUPPORTED      Storage not supported
+ * @retval #STORAGE_ERROR_OPERATION_FAILED   Operation failed
+ *
+ * @see storage_changed_cb()
+ * @see storage_set_changed_cb()
+ */
+int storage_unset_changed_cb(storage_type_e type, storage_changed_cb callback);
+
 /**
  * @brief Gets the total space of the given storage in bytes.
  *
