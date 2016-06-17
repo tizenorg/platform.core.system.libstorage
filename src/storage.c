@@ -40,6 +40,12 @@ const char *dir_path[STORAGE_DIRECTORY_MAX] = {
 
 static dd_list *st_int_head; /* Internal storage list */
 
+static dd_list *compat_cb_list;
+struct compat_cb_info {
+	storage_state_changed_cb user_cb;
+	void *user_data;
+};
+
 void add_device(const struct storage_ops *st)
 {
 	DD_LIST_APPEND(st_int_head, st);
@@ -259,6 +265,20 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 	return STORAGE_ERROR_NONE;
 }
 
+static void compat_cb(int storage_id,
+                storage_dev_e dev, storage_state_e state,
+                const char *fstype, const char *fsuuid, const char *mountpath,
+                bool primary, int flags, void *user_data)
+{
+	struct compat_cb_info* ccb_info;
+	dd_list *elem;
+
+	if(storage_id == STORAGE_TYPE_EXTERNAL && dev == STORAGE_DEV_EXT_SDCARD){
+		DD_LIST_FOREACH(compat_cb_list, elem, ccb_info)
+			ccb_info->user_cb(storage_id, state, ccb_info->user_data);
+	}
+}
+
 API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb callback, void *user_data)
 {
 	const struct storage_ops *st;
@@ -266,12 +286,35 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 	int ret;
 	dd_list *elem;
 
+	struct compat_cb_info* ccb_info;
+	static int compat_cb_init = 0;
+
 	if (storage_id < 0)
 		return STORAGE_ERROR_NOT_SUPPORTED;
 
 	if (!callback) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	/* For backward compatability */
+	if (storage_id == STORAGE_TYPE_EXTERNAL) {
+		if(!compat_cb_init){
+			ret = storage_set_changed_cb(STORAGE_TYPE_EXTERNAL, compat_cb, NULL);
+			if(ret == STORAGE_ERROR_NONE)
+				compat_cb_init = 1;
+			else
+				return ret;
+		}
+
+		ccb_info = malloc(sizeof(struct compat_cb_info));
+		if(ccb_info == NULL)
+			return STORAGE_ERROR_OPERATION_FAILED;
+		ccb_info->user_cb = callback;
+		ccb_info->user_data = user_data;
+		DD_LIST_APPEND(compat_cb_list, ccb_info);
+
+		return STORAGE_ERROR_NONE;
 	}
 
 	/* Internal storage does not support registering changed callback */
@@ -306,6 +349,21 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 	if (!callback) {
 		_E("Invalid parameger");
 		return STORAGE_ERROR_INVALID_PARAMETER;
+	}
+
+	/* For backward compatability */
+	if (storage_id == STORAGE_TYPE_EXTERNAL) {
+		dd_list *elem_n;
+		struct compat_cb_info* ccb_info;
+
+		DD_LIST_FOREACH_SAFE(compat_cb_list, elem, elem_n, ccb_info) {
+			if(ccb_info->user_cb == callback){
+				DD_LIST_REMOVE(compat_cb_list, ccb_info);
+				free(ccb_info);
+				return STORAGE_ERROR_NONE;
+			}
+		}
+		return STORAGE_ERROR_OPERATION_FAILED;
 	}
 
 	/* Internal storage does not support registering changed callback */
