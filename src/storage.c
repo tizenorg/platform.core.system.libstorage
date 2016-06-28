@@ -266,17 +266,16 @@ API int storage_get_state(int storage_id, storage_state_e *state)
 }
 
 static void compat_cb(int storage_id,
-                storage_dev_e dev, storage_state_e state,
-                const char *fstype, const char *fsuuid, const char *mountpath,
-                bool primary, int flags, void *user_data)
+		storage_dev_e dev, storage_state_e state,
+		const char *fstype, const char *fsuuid, const char *mountpath,
+		bool primary, int flags, void *user_data)
 {
 	struct compat_cb_info* ccb_info;
 	dd_list *elem;
 
-	if(storage_id == STORAGE_TYPE_EXTERNAL && dev == STORAGE_DEV_EXT_SDCARD){
+	if (storage_id == STORAGE_TYPE_EXTERNAL && dev == STORAGE_DEV_EXT_SDCARD)
 		DD_LIST_FOREACH(compat_cb_list, elem, ccb_info)
 			ccb_info->user_cb(storage_id, state, ccb_info->user_data);
-	}
 }
 
 API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb callback, void *user_data)
@@ -299,16 +298,16 @@ API int storage_set_state_changed_cb(int storage_id, storage_state_changed_cb ca
 
 	/* For backward compatability */
 	if (storage_id == STORAGE_TYPE_EXTERNAL) {
-		if(!compat_cb_init){
+		if (!compat_cb_init) {
 			ret = storage_set_changed_cb(STORAGE_TYPE_EXTERNAL, compat_cb, NULL);
-			if(ret == STORAGE_ERROR_NONE)
+			if (ret == STORAGE_ERROR_NONE)
 				compat_cb_init = 1;
 			else
 				return ret;
 		}
 
 		ccb_info = malloc(sizeof(struct compat_cb_info));
-		if(ccb_info == NULL)
+		if (ccb_info == NULL)
 			return STORAGE_ERROR_OPERATION_FAILED;
 		ccb_info->user_cb = callback;
 		ccb_info->user_data = user_data;
@@ -357,7 +356,7 @@ API int storage_unset_state_changed_cb(int storage_id, storage_state_changed_cb 
 		struct compat_cb_info* ccb_info;
 
 		DD_LIST_FOREACH_SAFE(compat_cb_list, elem, elem_n, ccb_info) {
-			if(ccb_info->user_cb == callback){
+			if (ccb_info->user_cb == callback) {
 				DD_LIST_REMOVE(compat_cb_list, ccb_info);
 				free(ccb_info);
 				return STORAGE_ERROR_NONE;
