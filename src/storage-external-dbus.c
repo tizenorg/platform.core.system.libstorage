@@ -47,6 +47,7 @@ struct storage_ext_callback {
 
 static dd_list *changed_list;
 
+//LCOV_EXCL_START Not called Callback
 static void storage_ext_release_internal(storage_ext_device *dev)
 {
 	if (!dev)
@@ -68,6 +69,7 @@ void storage_ext_release_device(storage_ext_device **dev)
 	free(*dev);
 	*dev = NULL;
 }
+//LCOV_EXCL_STOP
 
 void storage_ext_release_list(dd_list **list)
 {
