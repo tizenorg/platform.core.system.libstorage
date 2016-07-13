@@ -410,7 +410,7 @@ int storage_ext_get_state(int storage_id, storage_state_e *state)
 	if (ret < 0)
 		_E("Failed to get state of storage id (%d, ret:%d)", storage_id, ret); //LCOV_EXCL_LINE
 
-out:
+out :
 	storage_ext_release_device(&dev);
 	return ret;
 }

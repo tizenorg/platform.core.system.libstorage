@@ -36,11 +36,11 @@ extern "C" {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    STORAGE_ERROR_NONE              = TIZEN_ERROR_NONE,                /**< Successful */
-    STORAGE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,   /**< Invalid parameter */
-    STORAGE_ERROR_OUT_OF_MEMORY     = TIZEN_ERROR_OUT_OF_MEMORY,       /**< Out of memory */
-    STORAGE_ERROR_NOT_SUPPORTED     = TIZEN_ERROR_NO_SUCH_DEVICE,      /**< Storage not supported */
-    STORAGE_ERROR_OPERATION_FAILED  = TIZEN_ERROR_SYSTEM_CLASS | 0x12, /**< Operation failed */
+	STORAGE_ERROR_NONE              = TIZEN_ERROR_NONE,                /**< Successful */
+	STORAGE_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,   /**< Invalid parameter */
+	STORAGE_ERROR_OUT_OF_MEMORY     = TIZEN_ERROR_OUT_OF_MEMORY,       /**< Out of memory */
+	STORAGE_ERROR_NOT_SUPPORTED     = TIZEN_ERROR_NO_SUCH_DEVICE,      /**< Storage not supported */
+	STORAGE_ERROR_OPERATION_FAILED  = TIZEN_ERROR_SYSTEM_CLASS | 0x12, /**< Operation failed */
 } storage_error_e;
 
 
@@ -49,8 +49,8 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    STORAGE_TYPE_INTERNAL, /**< Internal device storage (built-in storage in a device, non-removable) */
-    STORAGE_TYPE_EXTERNAL, /**< External storage */
+	STORAGE_TYPE_INTERNAL, /**< Internal device storage (built-in storage in a device, non-removable) */
+	STORAGE_TYPE_EXTERNAL, /**< External storage */
 } storage_type_e;
 
 
@@ -59,10 +59,10 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    STORAGE_STATE_UNMOUNTABLE = -2, /**< Storage is present but cannot be mounted. Typically it happens if the file system of the storage is corrupted */
-    STORAGE_STATE_REMOVED = -1, /**< Storage is not present */
-    STORAGE_STATE_MOUNTED = 0, /**< Storage is present and mounted with read/write access */
-    STORAGE_STATE_MOUNTED_READ_ONLY = 1, /**< Storage is present and mounted with read only access */
+	STORAGE_STATE_UNMOUNTABLE = -2, /**< Storage is present but cannot be mounted. Typically it happens if the file system of the storage is corrupted */
+	STORAGE_STATE_REMOVED = -1, /**< Storage is not present */
+	STORAGE_STATE_MOUNTED = 0, /**< Storage is present and mounted with read/write access */
+	STORAGE_STATE_MOUNTED_READ_ONLY = 1, /**< Storage is present and mounted with read only access */
 } storage_state_e;
 
 /**

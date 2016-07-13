@@ -52,14 +52,14 @@ extern "C" {
  * @see
  * @par Example:
  * @code
- * 	...
+ *	...
  *  struct statvfs s;
- * 	if (storage_get_internal_memory_size(&s) < 0)
- * 		dlog_print(DLOG_DEBUG, LOG_TAG, "Fail to get internal memory size");
- * 	else
- * 		dlog_print(DLOG_DEBUG, LOG_TAG, "Total mem : %lf, Avail mem : %lf",
+ *	if (storage_get_internal_memory_size(&s) < 0)
+ *	dlog_print(DLOG_DEBUG, LOG_TAG, "Fail to get internal memory size");
+ *	else
+ *		dlog_print(DLOG_DEBUG, LOG_TAG, "Total mem : %lf, Avail mem : %lf",
  *				(double)s.f_frsize*s.f_blocks, (double)s.f_bsize*s.f_bavail);
- * 	...
+ *	...
  * @endcode
  */
 #ifndef __USE_FILE_OFFSET64
@@ -84,14 +84,14 @@ extern int storage_get_internal_memory_size64(struct statvfs *buf);
  * @see
  * @par Example:
  * @code
- * 	...
+ *	...
  *  struct statvfs s;
- * 	if (storage_get_external_memory_size(&s) < 0)
- * 		dlog_print(DLOG_DEBUG, LOG_TAG, "Fail to get external memory size");
- * 	else
- * 		dlog_print(DLOG_DEBUG, LOG_TAG, "Total mem : %lf, Avail mem : %lf",
+ *	if (storage_get_external_memory_size(&s) < 0)
+ *		dlog_print(DLOG_DEBUG, LOG_TAG, "Fail to get external memory size");
+ *	else
+ *		dlog_print(DLOG_DEBUG, LOG_TAG, "Total mem : %lf, Avail mem : %lf",
  *				(double)s.f_frsize*s.f_blocks, (double)s.f_bsize*s.f_bavail);
- * 	...
+ *	...
  * @endcode
  */
 #ifndef __USE_FILE_OFFSET64
