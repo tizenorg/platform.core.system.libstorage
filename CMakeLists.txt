@@ -30,7 +30,8 @@ ENDFOREACH(flag)
 
 SET(HEADERS
 	include/storage.h
-	include/storage-expand.h)
+	include/storage-expand.h
+	include/storage-internal.h)
 
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden")
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -g")
@@ -45,7 +46,8 @@ SET(SRCS
 	src/storage.c
 	src/storage-internal.c
 	src/storage-external.c
-	src/storage-external-dbus.c)
+	src/storage-external-dbus.c
+	src/storage-external-inhouse.c)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS} ${TARGET_SRCS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${rpkgs_LDFLAGS})
