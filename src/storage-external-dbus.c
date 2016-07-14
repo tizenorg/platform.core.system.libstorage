@@ -112,14 +112,14 @@ static GDBusConnection *get_dbus_connection(void)
 	return conn;
 }
 
-static GVariant *dbus_method_call_sync(const gchar *dest, const gchar *path,
+GVariant *dbus_method_call_sync(const gchar *dest, const gchar *path,
 				const gchar *iface, const gchar *method, GVariant *param)
 {
 	GDBusConnection *conn;
 	GError *err = NULL;
 	GVariant *ret;
 
-	if (!dest || !path || !iface || !method || !param)
+	if (!dest || !path || !iface || !method)
 		return NULL;
 
 	conn = get_dbus_connection();
