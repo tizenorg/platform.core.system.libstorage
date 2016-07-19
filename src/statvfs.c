@@ -364,6 +364,16 @@ int storage_get_external_memory_size_with_path(char *path, struct statvfs *buf)
 		return -errno;
 	}
 
+	if (buf->f_bavail == 0) {
+		ret = get_external_path(ext_path, sizeof(ext_path));
+		if (ret == -ENODEV)
+			goto out_nodev;
+		if (ret < 0) {
+			_E("Failed to get external path(%d)", ret); //LCOV_EXCL_LINE
+			return ret;
+		}
+	}
+
 	memcpy(buf, &temp, sizeof(temp));
 	return 0;
 
@@ -402,6 +412,16 @@ int storage_get_external_memory_size64_with_path(char *path, struct statvfs *buf
 	if (ret) {
 		_E("fail to get memory size");
 		return -errno;
+	}
+
+	if (buf->f_bavail == 0) {
+		ret = get_external_path(ext_path, sizeof(ext_path));
+		if (ret == -ENODEV)
+			goto out_nodev;
+		if (ret < 0) {
+			_E("Failed to get external path(%d)", ret);
+			return ret;
+		}
 	}
 
 	return 0;
