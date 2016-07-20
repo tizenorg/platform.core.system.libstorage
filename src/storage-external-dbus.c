@@ -36,13 +36,14 @@
 #define STORAGE_EXT_DEVICE_CHANGED "DeviceChanged"
 #define STORAGE_EXT_DEVICE_ADDED   "DeviceAdded"
 #define STORAGE_EXT_DEVICE_REMOVED "DeviceRemoved"
+#define STORAGE_EXT_DEVICE_BLOCKED "DeviceBlocked"
 
 #define DBUS_REPLY_TIMEOUT (-1)
 
 struct storage_ext_callback {
 	storage_ext_changed_cb func;
 	void *data;
-	guint block_id;
+	guint blockmanager_id;
 };
 
 static dd_list *changed_list;
@@ -270,7 +271,7 @@ static void storage_ext_changed(GDBusConnection *conn,
 	iface_len = strlen(iface) + 1;
 	signal_len = strlen(signal) + 1;
 
-	if (strncmp(iface, STORAGE_EXT_IFACE, iface_len))
+	if (strncmp(iface, STORAGE_EXT_IFACE_MANAGER, iface_len))
 		return;
 
 	if (!strncmp(signal, STORAGE_EXT_DEVICE_CHANGED, signal_len))
@@ -282,6 +283,9 @@ static void storage_ext_changed(GDBusConnection *conn,
 	else if (!strncmp(signal, STORAGE_EXT_DEVICE_REMOVED, signal_len))
 		state = STORAGE_EXT_REMOVED;
 
+	else if (!strncmp(signal, STORAGE_EXT_DEVICE_BLOCKED, signal_len))
+		state = STORAGE_EXT_BLOCKED;
+
 	else
 		return;
 
@@ -292,7 +296,7 @@ static void storage_ext_changed(GDBusConnection *conn,
 int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 {
 	GDBusConnection *conn;
-	guint block_id = 0;
+	guint blockmanager_id = 0;
 	struct storage_ext_callback *callback;
 	dd_list *elem;
 
@@ -302,7 +306,7 @@ int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 	DD_LIST_FOREACH(changed_list, elem, callback) {
 		if (callback->func != func)
 			continue;
-		if (callback->block_id == 0)
+		if (callback->blockmanager_id == 0)
 			continue;
 
 		return -EEXIST;
@@ -325,9 +329,9 @@ int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 //LCOV_EXCL_STOP
 	}
 
-	block_id = g_dbus_connection_signal_subscribe(conn,
+	blockmanager_id = g_dbus_connection_signal_subscribe(conn,
 			STORAGE_EXT_BUS_NAME,
-			STORAGE_EXT_IFACE,
+			STORAGE_EXT_IFACE_MANAGER,
 			NULL,
 			NULL,
 			NULL,
@@ -335,7 +339,7 @@ int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 			storage_ext_changed,
 			NULL,
 			NULL);
-	if (block_id == 0) {
+	if (blockmanager_id == 0) {
 		free(callback);
 		_E("Failed to subscrive bus signal");
 		return -EPERM;
@@ -343,7 +347,7 @@ int storage_ext_register_device_change(storage_ext_changed_cb func, void *data)
 
 	callback->func = func;
 	callback->data = data;
-	callback->block_id = block_id;
+	callback->blockmanager_id = blockmanager_id;
 
 	DD_LIST_APPEND(changed_list, callback);
 
@@ -370,8 +374,8 @@ void storage_ext_unregister_device_change(storage_ext_changed_cb func)
 	DD_LIST_FOREACH(changed_list, elem, callback) {
 		if (callback->func != func)
 			continue;
-		if (callback->block_id > 0)
-			g_dbus_connection_signal_unsubscribe(conn, callback->block_id);
+		if (callback->blockmanager_id > 0)
+			g_dbus_connection_signal_unsubscribe(conn, callback->blockmanager_id);
 
 		DD_LIST_REMOVE(changed_list, callback);
 		free(callback);
@@ -385,7 +389,7 @@ int storage_ext_get_device_info(int storage_id, storage_ext_device *info)
 	result = dbus_method_call_sync(STORAGE_EXT_BUS_NAME,
 			STORAGE_EXT_PATH_MANAGER,
 			STORAGE_EXT_IFACE_MANAGER,
-			"GetDeviceInfoByID",
+			"GetDeviceInfo",
 			g_variant_new("(i)", storage_id));
 	if (!result) {
 		_E("There is no storage with the storage id (%d)", storage_id); //LCOV_EXCL_LINE

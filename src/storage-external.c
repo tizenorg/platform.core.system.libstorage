@@ -58,6 +58,9 @@ static int storage_ext_get_dev_state(storage_ext_device *dev,
 		default:
 			return -EINVAL;
 		}
+	case STORAGE_EXT_BLOCKED:
+		*state = STORAGE_STATE_UNMOUNTABLE;
+		return 0;
 	default:
 		return -EINVAL;
 	}
