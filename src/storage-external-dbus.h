@@ -41,6 +41,7 @@ enum storage_ext_state {
 	STORAGE_EXT_REMOVED,
 	STORAGE_EXT_ADDED,
 	STORAGE_EXT_CHANGED,
+	STORAGE_EXT_BLOCKED,
 };
 
 enum storage_ext_type {

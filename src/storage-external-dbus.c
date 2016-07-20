@@ -36,6 +36,7 @@
 #define STORAGE_EXT_DEVICE_CHANGED "DeviceChanged"
 #define STORAGE_EXT_DEVICE_ADDED   "DeviceAdded"
 #define STORAGE_EXT_DEVICE_REMOVED "DeviceRemoved"
+#define STORAGE_EXT_DEVICE_BLOCKED "DeviceBlocked"
 
 #define DBUS_REPLY_TIMEOUT (-1)
 
@@ -281,6 +282,9 @@ static void storage_ext_changed(GDBusConnection *conn,
 
 	else if (!strncmp(signal, STORAGE_EXT_DEVICE_REMOVED, signal_len))
 		state = STORAGE_EXT_REMOVED;
+
+	else if (!strncmp(signal, STORAGE_EXT_DEVICE_BLOCKED, signal_len))
+		state = STORAGE_EXT_BLOCKED;
 
 	else
 		return;
